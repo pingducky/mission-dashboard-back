@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { ErrorEnum } from '../enums/errorEnum';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 
@@ -12,20 +13,18 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
-      throw new Error("Token manquant");
+      throw new Error(ErrorEnum.MISSING_TOKEN);
     }
 
-    // Tentative de vérification du token
     const decoded = jwt.verify(token, SECRET_KEY);
     (req as CustomRequest).token = decoded;
 
     next();
   } catch (err) {
-    console.log("Erreur de vérification du JWT : ", err);
     if (err instanceof jwt.JsonWebTokenError) {
-      res.status(401).send('Signature invalide ou jeton incorrect');
+      res.status(401).send(ErrorEnum.INVALID_SIGNATURE_OR_INCORRECT_TOKEN);
     } else {
-      res.status(401).send('Veuillez vous authentifier');
+      res.status(401).send(ErrorEnum.PLEASE_AUTHENTICATE);
     }
   }
 };

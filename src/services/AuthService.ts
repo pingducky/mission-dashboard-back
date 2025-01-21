@@ -1,23 +1,20 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import AccountModel from '../models/AccountModel';
+import { ErrorEnum } from '../enums/errorEnum';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
 class AuthService {
-  // Fonction d'enregistrement d'un utilisateur
   public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
-    // Vérifier si l'email existe déjà
     const existingUser = await AccountModel.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error('Email déjà utilisé');
+      throw new Error(ErrorEnum.EMAIL_ALREADY_USED);
     }
 
-    // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Créer un nouvel utilisateur
     const newAccount = await AccountModel.create({
       firstName,
       lastName,
@@ -30,36 +27,31 @@ class AuthService {
     return AuthService.generateJwt(newAccount);
   }
 
-  // Fonction de connexion d'un utilisateur
   public static async login(email: string, password: string): Promise<string> {
-    // Chercher l'utilisateur par email
     const account = await AccountModel.findOne({ where: { email } });
     if (!account) {
-      throw new Error('Compte non trouvé');
+      throw new Error(ErrorEnum.ACCOUNT_NOT_FOUND);
     }
 
-    // Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
-      throw new Error('Mot de passe invalide');
+      throw new Error(ErrorEnum.PASSWORD_INVALID);
     }
 
     return AuthService.generateJwt(account);
   }
 
-  // Fonction pour générer un token JWT
-  private static generateJwt(account: any): string {
+  private static generateJwt(account: AccountModel): string {
     return jwt.sign({ id: account.id, email: account.email }, SECRET_KEY, {
       expiresIn: JWT_EXPIRES_IN
     });
   }
 
-  // Fonction de vérification du token JWT
-  public static verifyJwt(token: string): any {
+  public static verifyJwt(token: string): JwtPayload | string {
     try {
       return jwt.verify(token, SECRET_KEY);
     } catch (error) {
-      throw new Error('Token invalide');
+      throw new Error(ErrorEnum.INVALID_TOKEN);
     }
   }
 }
