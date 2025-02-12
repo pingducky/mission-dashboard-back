@@ -4,18 +4,19 @@ import { ErrorEnum } from '../enums/errorEnum';
 
 export const getAllEmployees = async (req: Request, res: Response): Promise<void> => {
     try {
-        // Vérification si l'utilisateur est admin (exemple avec req.user.role)
-        //if (req.user.role !== 'admin') {
-            //throw new Error(ErrorEnum.UNAUTHORIZED);
-        //}
-
         const employees = await EmployeeService.getAllEmployees();
         res.status(200).json(employees);
+        return;
     } catch (error: unknown) {
         if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
+            // Si c'est une erreur Sequelize (erreur BDD), on renvoie 500
+            if (error.name === "SequelizeDatabaseError") {
+                res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+            } else {
+                res.status(400).json({ error: error.message });
+            }
         } else {
-            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+            res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
         }
     }
 };
@@ -24,10 +25,10 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
     try {
         const { id } = req.params;
 
-        // Vérifier si l'ID est valide et convertir en nombre
         const numericId = Number(id);
         if (isNaN(numericId)) {
-            //throw new Error(ErrorEnum.INVALID_ID);
+            res.status(400).json({ error: ErrorEnum.ACCOUNT_NOT_FOUND });
+            return;
         }
 
         const employee = await EmployeeService.getEmployeeById(numericId);
@@ -38,25 +39,31 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
         }
 
         res.status(200).json(employee);
+        return;
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });
         } else {
             res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
         }
+        return;
     }
 };
-
 
 export const updateEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
         const updateData = req.body;
 
-        // Vérifier si l'ID est valide et convertir en nombre
         const numericId = Number(id);
-        if (isNaN(numericId) || !updateData) {
-            //throw new Error(ErrorEnum.INVALID_ID);
+        if (isNaN(numericId)) {
+            res.status(400).json({ error: ErrorEnum.ACCOUNT_NOT_FOUND });
+            return;
+        }
+
+        if (!updateData || Object.keys(updateData).length === 0) {
+            res.status(400).json({ error: ErrorEnum.UPDATE_EMPTY });
+            return;
         }
 
         const updatedEmployee = await EmployeeService.updateEmployee(numericId, updateData);
@@ -67,6 +74,7 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
         }
 
         res.status(200).json(updatedEmployee);
+        return;
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });

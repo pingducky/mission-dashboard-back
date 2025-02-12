@@ -9,6 +9,7 @@ export enum ErrorEnum {
     INVALID_SIGNATURE_OR_INCORRECT_TOKEN = "Signature invalide ou jeton incorrect",
     PLEASE_AUTHENTICATE = "Veuillez vous authentifier",
     UNEXPECTED_ERROR = "Une exception non géré c'est produite",
-    UNAUTHORIZED = "Vous n'avez pas les permissions nécessaires pour effectuer cette action.",
-  }
+    BDD_ERROR = "Erreur de base de données",
+    UPDATE_EMPTY = "Les données de mise à jour sont requises.",
+}
   
