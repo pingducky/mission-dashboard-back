@@ -1,6 +1,6 @@
 import AccountModel from '../models/AccountModel';
 
-class EmployeeService {
+class EmployeService {
     static async getAllEmployees() {
         return await AccountModel.findAll();
     }
@@ -19,4 +19,4 @@ class EmployeeService {
     }
 }
 
-export default EmployeeService;
+export default EmployeService;

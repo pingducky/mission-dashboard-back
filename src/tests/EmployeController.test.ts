@@ -3,7 +3,7 @@ import app from "..";
 import { resetDatabase } from "../utils/databaseUtils";
 import { ErrorEnum } from "../enums/errorEnum";
 import sequelize from "../config/sequelize";
-import EmployeeService from "../services/EmployeeService";
+import EmployeService from "../services/EmployeService";
 
 let authToken: string;
 
@@ -88,7 +88,7 @@ describe("Employee API", () => {
     });
 
     test("Doit gérer une erreur du service lors de la récupération des employés", async () => {
-        jest.spyOn(EmployeeService, "getAllEmployees").mockImplementation(() => {
+        jest.spyOn(EmployeService, "getAllEmployees").mockImplementation(() => {
             throw new Error("Service Error");
         });
 
@@ -144,7 +144,7 @@ describe("Employee API", () => {
     });
 
     test("Doit gérer une erreur du service lors de la récupération d'un employé par ID", async () => {
-        jest.spyOn(EmployeeService, "getEmployeeById").mockImplementation(() => {
+        jest.spyOn(EmployeService, "getEmployeeById").mockImplementation(() => {
             throw new Error("Unexpected error");
         });
 
@@ -201,7 +201,7 @@ describe("Employee API", () => {
     });
 
     test("Doit retourner une erreur si aucune modification n'est apportée", async () => {
-        jest.spyOn(EmployeeService, "updateEmployee").mockResolvedValue(null);
+        jest.spyOn(EmployeService, "updateEmployee").mockResolvedValue(null);
 
         const response = await request(app)
             .patch("/api/employees/1")
@@ -221,7 +221,7 @@ describe("Employee API", () => {
     });
 
     test("Doit gérer une erreur du service lors de la mise à jour d'un employé", async () => {
-        jest.spyOn(EmployeeService, "updateEmployee").mockImplementation(() => {
+        jest.spyOn(EmployeService, "updateEmployee").mockImplementation(() => {
             throw new Error("Database Error");
         });
 
