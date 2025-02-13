@@ -3,6 +3,7 @@ import app from "..";
 import { resetDatabase } from "../utils/databaseUtils";
 import { ErrorEnum } from "../enums/errorEnum";
 import sequelize from "../config/sequelize";
+import EmployeeService from "../services/EmployeeService";
 
 let authToken: string;
 
@@ -34,6 +35,7 @@ afterAll(async () => {
 });
 
 describe("Employee API", () => {
+    //Test unitaire de la route /api/employees
     test("Doit récupérer tous les employés", async () => {
         const response = await request(app)
             .get("/api/employees")
@@ -85,6 +87,20 @@ describe("Employee API", () => {
         expect(response.status).toBe(401);
     });
 
+    test("Doit gérer une erreur du service lors de la récupération des employés", async () => {
+        jest.spyOn(EmployeeService, "getAllEmployees").mockImplementation(() => {
+            throw new Error("Service Error");
+        });
+
+        const response = await request(app)
+            .get("/api/employees")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error", "Service Error");
+    });
+
+    //Test unitaire de la route /api/employees/:id
     test("Doit récupérer un employé par ID", async () => {
         const response = await request(app)
             .get("/api/employees/1")
@@ -118,6 +134,29 @@ describe("Employee API", () => {
         expect(response.status).toBe(401);
     });
 
+    test("Doit retourner une erreur si l'ID de l'employé est null ou undefined", async () => {
+        const response = await request(app)
+            .get("/api/employees/null")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error", ErrorEnum.ACCOUNT_NOT_FOUND);
+    });
+
+    test("Doit gérer une erreur du service lors de la récupération d'un employé par ID", async () => {
+        jest.spyOn(EmployeeService, "getEmployeeById").mockImplementation(() => {
+            throw new Error("Unexpected error");
+        });
+
+        const response = await request(app)
+            .get("/api/employees/1")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error", "Unexpected error");
+    });
+
+    //Test unitaire de la route PATCH /api/employees/:id
     test("Doit mettre à jour un employé", async () => {
         const response = await request(app)
             .patch("/api/employees/1")
@@ -133,8 +172,8 @@ describe("Employee API", () => {
             .patch("/api/employees/1")
             .set("Authorization", `Bearer ${authToken}`)
             .send({
-                firstName: "", // Un prénom ne peut pas être vide
-                email: "invalid-email", // Email invalide
+                firstName: "",
+                email: "invalid-email",
             });
 
         expect(response.status).toBe(400);
@@ -161,6 +200,18 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("error", ErrorEnum.ACCOUNT_NOT_FOUND);
     });
 
+    test("Doit retourner une erreur si aucune modification n'est apportée", async () => {
+        jest.spyOn(EmployeeService, "updateEmployee").mockResolvedValue(null);
+
+        const response = await request(app)
+            .patch("/api/employees/1")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error", ErrorEnum.UPDATE_EMPTY);
+    });
+
     test("Doit empêcher un utilisateur non authentifié de modifier les infos d'un autre utilisateur via l'ID", async () => {
         const response = await request(app)
             .patch("/api/employees/1")
@@ -169,28 +220,17 @@ describe("Employee API", () => {
         expect(response.status).toBe(401);
     });
 
-
-    test("Doit retourner une erreur en cas d'erreur serveur", async () => {
-        jest.spyOn(console, "error").mockImplementation(() => {}); // Évite les logs d'erreur dans les tests
-
-        const response = await request(app)
-            .get("/api/employees/1")
-            .set("Authorization", `Bearer ${authToken}`);
-
-        expect(response.status).toBe(200); // Dans un vrai test, tu devrais simuler une erreur
-    });
-
-    test("Doit retourner une erreur serveur en cas d'échec de la base de données", async () => {
-        jest.spyOn(sequelize, "query").mockRejectedValue(new Error("Erreur de base de données"));
-        jest.spyOn(sequelize, "authenticate").mockRejectedValue(new Error("Erreur critique de la base de données"));
+    test("Doit gérer une erreur du service lors de la mise à jour d'un employé", async () => {
+        jest.spyOn(EmployeeService, "updateEmployee").mockImplementation(() => {
+            throw new Error("Database Error");
+        });
 
         const response = await request(app)
-            .get("/api/employees")
-            .set("Authorization", `Bearer ${authToken}`);
+            .patch("/api/employees/1")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ lastName: "UpdatedLastName" });
 
         expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("error", ErrorEnum.BDD_ERROR);
-
-        jest.restoreAllMocks();
+        expect(response.body).toHaveProperty("error", "Database Error");
     });
 });

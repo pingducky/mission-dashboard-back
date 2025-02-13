@@ -9,14 +9,9 @@ export const getAllEmployees = async (req: Request, res: Response): Promise<void
         return;
     } catch (error: unknown) {
         if (error instanceof Error) {
-            // Si c'est une erreur Sequelize (erreur BDD), on renvoie 500
-            if (error.name === "SequelizeDatabaseError") {
-                res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
-            } else {
-                res.status(400).json({ error: error.message });
-            }
+            res.status(400).json({ error: error.message });
         } else {
-            res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
         }
     }
 };

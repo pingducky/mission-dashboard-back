@@ -9,7 +9,6 @@ class EmployeeService {
         return await AccountModel.findByPk(id);
     }
 
-    // Mettre à jour un employé
     static async updateEmployee(id: number, updateData: object) {
         const employee = await AccountModel.findByPk(id);
         if (employee) {
