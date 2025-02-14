@@ -1,5 +1,5 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/sequelize';
+import { Model, DataTypes, Sequelize } from 'sequelize';
+import sequelize from "../config/sequelize";
 
 class AccountModel extends Model {
     public id!: number;
@@ -11,7 +11,7 @@ class AccountModel extends Model {
     public address!: string;
     public notificationMail!: boolean;
     public notificationSms!: boolean;
-    public isEnabled!: boolean
+    public isEnabled!: boolean;
 }
 
 AccountModel.init(
