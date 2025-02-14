@@ -64,7 +64,7 @@ AccountModel.init(
     },
     {
         sequelize,
-        tableName: 'account', // Assurez-vous que le nom de la table est correct
+        tableName: 'account',
         timestamps: false,
     }
 );
