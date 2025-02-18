@@ -33,3 +33,5 @@ AccountMissionLinked.init(
         timestamps: false,
     }
 );
+
+export default AccountMissionLinked;

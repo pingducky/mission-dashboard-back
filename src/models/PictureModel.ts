@@ -5,8 +5,9 @@ class PictureModel extends Model {
     public id!: number;
     public name!: string;
     public alt?: string;
-    public idMessage!: number;
-    public idMission!: number;
+    public path!: string;
+    public idMessage?: number | null;
+    public idMission?: number | null;
 }
 
 PictureModel.init(
@@ -24,13 +25,17 @@ PictureModel.init(
             type: DataTypes.STRING,
             allowNull: true,
         },
+        path: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         idMessage: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
         idMission: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true, 
         },
     },
     {
@@ -39,3 +44,5 @@ PictureModel.init(
         timestamps: false,
     }
 );
+
+export default PictureModel;

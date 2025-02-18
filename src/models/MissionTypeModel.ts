@@ -29,3 +29,5 @@ MissionTypeModel.init(
         timestamps: false,
     }
 );
+
+export default MissionTypeModel;

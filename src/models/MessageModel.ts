@@ -34,3 +34,5 @@ MessageModel.init(
         timestamps: false,
     }
 );
+
+export default MessageModel;

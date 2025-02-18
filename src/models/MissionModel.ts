@@ -5,9 +5,9 @@ class MissionModel extends Model {
     public id!: number;
     public description!: string;
     public timeBegin!: Date;
+    public timeEnd?: Date;
     public estimatedEnd?: Date;
     public address!: string;
-    public limit?: Date;
     public idMissionType!: number;
 }
 
@@ -34,7 +34,7 @@ MissionModel.init(
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        limit: {
+        timeEnd: {
             type: DataTypes.DATE,
             allowNull: true,
         },
@@ -49,3 +49,5 @@ MissionModel.init(
         timestamps: false,
     }
 );
+
+export default MissionModel;

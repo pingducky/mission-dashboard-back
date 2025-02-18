@@ -23,3 +23,5 @@ AccountMissionAssign.init(
         timestamps: false,
     }
 );
+
+export default AccountMissionAssign;
