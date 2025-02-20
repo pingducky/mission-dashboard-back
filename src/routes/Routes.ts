@@ -15,6 +15,6 @@ router.post('/login', login);
 
 router.get('/account/:id', auth, getAccountById);
 
-router.post("/missions", auth, upload, createMission);
+router.post("/mission", auth, upload, createMission);
 
 export default router;

@@ -1,5 +1,5 @@
 export enum ErrorEnum {
-    MISSING_REQUIRED_FIELDS = 'Missing required fields',
+    MISSING_REQUIRED_FIELDS = 'Certains champs requis sont manquant',
     EMAIL_ALREADY_USED = 'Email déjà utilisé',
     INVALID_EMAIL = 'Adresse email invalide',
     ACCOUNT_NOT_FOUND = "Compte non trouvé",
