@@ -3,7 +3,6 @@ import app from "..";
 import { resetDatabase } from "../utils/databaseUtils";
 import { ErrorEnum } from "../enums/errorEnum";
 import sequelize from "../config/sequelize";
-import EmployeService from "../services/EmployeService";
 
 let authToken: string;
 
@@ -20,22 +19,14 @@ beforeEach(async () => {
         phoneNumber: "0123456789",
       });
 
-    const loginResponse = await request(app)
-        .post("/api/login")
-        .send({
-            email: "ff@ff.com",
-            password: "Not24get",
-        });
-
-    authToken = loginResponse.body.token;
+    authToken = userResponse.body.token;
 });
 
 afterAll(async () => {
     await sequelize.close();
 });
 
-describe("Employee API", () => {
-    //Test unitaire de la route /api/employees/:id/disable
+describe("PATCH /employees/:id/disable", () => {
     test("Doit désactiver l'employé", async () => {
         const response = await request(app)
             .patch("/api/employees/1/disable")

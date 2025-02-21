@@ -14,7 +14,7 @@ router.post('/login', login);
 
 router.get('/account/:id', auth, getAccountById);
 
-// Route Employés
+// Routes Employés
 router.patch('/employees/:id/disable', auth, disableEmployee);
 
 export default router;
