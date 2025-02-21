@@ -18,7 +18,7 @@ RoleModel.init(
             type: DataTypes.STRING(10),
             allowNull: false,
         },
-        LongLibel: {
+        longLibel: {
             type: DataTypes.STRING(50),
             allowNull: false,
         },
