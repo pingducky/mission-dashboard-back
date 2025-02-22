@@ -7,6 +7,7 @@ import MissionTypeModel from '../models/MissionTypeModel';
 import { MissionEnum } from '../controllers/enums/MissionEnum';
 import path from 'path';
 import fs from 'fs';
+import { generateAuthTokenForTest } from './Utils/TestProvider';
 
 let authToken: string;
 
@@ -17,18 +18,9 @@ beforeEach(async () => {
 beforeAll(async () => {
     await resetDatabase();
 
-    const userResponse = await request(app)
-    .post("/api/register")
-    .send({
-        firstName: "John",
-        lastName: "Doe",
-        email: "john.doe@example.com",
-        password: "password123",
-        phoneNumber: "1234567890",
-    });
+    authToken = await generateAuthTokenForTest();
 
-    authToken = userResponse.body.token;
-
+    // Création d'un type de modèle
     await MissionTypeModel.create({
         id: 1,
         longLibel: "Test Mission Type",
