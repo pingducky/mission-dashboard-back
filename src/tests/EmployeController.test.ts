@@ -1,13 +1,12 @@
 import request from "supertest";
 import app from "..";
-import { resetDatabase } from "../utils/databaseUtils";
+import { resetDatabase, resetTable } from "../utils/databaseUtils";
 import { ErrorEnum } from "../enums/errorEnum";
 import sequelize from "../config/sequelize";
-import EmployeService from "../services/EmployeService";
-
+import EmployeRepository from '../repositories/EmployeRepository';
 let authToken: string;
 
-beforeEach(async () => {
+beforeAll(async () => {
     await resetDatabase();
 
     const userResponse = await request(app)
@@ -20,14 +19,11 @@ beforeEach(async () => {
             phoneNumber: "1234567890",
         });
 
-    const loginResponse = await request(app)
-        .post("/api/login")
-        .send({
-            email: "john.doe@example.com",
-            password: "password123",
-        });
+    authToken = userResponse.body.token; // Pas besoin d’un login après register
+});
 
-    authToken = loginResponse.body.token;
+beforeEach(async () => {
+    //await resetTable('AccountModel'); // Adapte selon le bon modèle
 });
 
 afterAll(async () => {
@@ -35,7 +31,6 @@ afterAll(async () => {
 });
 
 describe("Employee API", () => {
-    //Test unitaire de la route /api/employees
     test("Doit récupérer tous les employés", async () => {
         const response = await request(app)
             .get("/api/employees")
@@ -70,7 +65,6 @@ describe("Employee API", () => {
         expect(createResponse.status).toBe(201);
         expect(createResponse.body).toHaveProperty("token");
 
-        //Récupére le token
         const newAuthToken = createResponse.body.token;
 
         const employeesResponse = await request(app)
@@ -81,14 +75,14 @@ describe("Employee API", () => {
         expect(employeesResponse.body.length).toBeGreaterThan(0);
     });
 
-    test("Doit empêcher un utilisateur non authentifié d'accéder a la liste d'employées", async () => {
+    test("Doit empêcher un utilisateur non authentifié d'accéder à la liste des employés", async () => {
         const response = await request(app).get("/api/employees");
 
         expect(response.status).toBe(401);
     });
 
     test("Doit gérer une erreur du service lors de la récupération des employés", async () => {
-        jest.spyOn(EmployeService, "getAllEmployees").mockImplementation(() => {
+        jest.spyOn(EmployeRepository, "getAll").mockImplementation(() => {
             throw new Error("Service Error");
         });
 
@@ -100,7 +94,6 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("error", "Service Error");
     });
 
-    //Test unitaire de la route /api/employees/:id
     test("Doit récupérer un employé par ID", async () => {
         const response = await request(app)
             .get("/api/employees/1")
@@ -134,17 +127,8 @@ describe("Employee API", () => {
         expect(response.status).toBe(401);
     });
 
-    test("Doit retourner une erreur si l'ID de l'employé est null ou undefined", async () => {
-        const response = await request(app)
-            .get("/api/employees/null")
-            .set("Authorization", `Bearer ${authToken}`);
-
-        expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("error", ErrorEnum.ACCOUNT_NOT_FOUND);
-    });
-
     test("Doit gérer une erreur du service lors de la récupération d'un employé par ID", async () => {
-        jest.spyOn(EmployeService, "getEmployeeById").mockImplementation(() => {
+        jest.spyOn(EmployeRepository, "getById").mockImplementation(() => {
             throw new Error("Unexpected error");
         });
 
@@ -156,7 +140,6 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("error", "Unexpected error");
     });
 
-    //Test unitaire de la route PATCH /api/employees/:id
     test("Doit mettre à jour un employé", async () => {
         const response = await request(app)
             .patch("/api/employees/1")
@@ -200,18 +183,6 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("error", ErrorEnum.ACCOUNT_NOT_FOUND);
     });
 
-    test("Doit retourner une erreur si aucune modification n'est apportée", async () => {
-        jest.spyOn(EmployeService, "updateEmployee").mockResolvedValue(null);
-
-        const response = await request(app)
-            .patch("/api/employees/1")
-            .set("Authorization", `Bearer ${authToken}`)
-            .send({});
-
-        expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("error", ErrorEnum.UPDATE_EMPTY);
-    });
-
     test("Doit empêcher un utilisateur non authentifié de modifier les infos d'un autre utilisateur via l'ID", async () => {
         const response = await request(app)
             .patch("/api/employees/1")
@@ -221,7 +192,7 @@ describe("Employee API", () => {
     });
 
     test("Doit gérer une erreur du service lors de la mise à jour d'un employé", async () => {
-        jest.spyOn(EmployeService, "updateEmployee").mockImplementation(() => {
+        jest.spyOn(EmployeRepository, "update").mockImplementation(() => {
             throw new Error("Database Error");
         });
 

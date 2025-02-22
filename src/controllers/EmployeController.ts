@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import EmployeService from '../services/EmployeService';
+import EmployeRepository from '../repositories/EmployeRepository';
 import { ErrorEnum } from '../enums/errorEnum';
 
 export const getAllEmployees = async (req: Request, res: Response): Promise<void> => {
     try {
-        const employees = await EmployeService.getAllEmployees();
+        const employees = await EmployeRepository.getAll();
         res.status(200).json(employees);
         return;
     } catch (error: unknown) {
@@ -26,7 +26,7 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
             return;
         }
 
-        const employee = await EmployeService.getEmployeeById(numericId);
+        const employee = await EmployeRepository.getById(numericId);
 
         if (!employee) {
             res.status(404).json({ error: ErrorEnum.ACCOUNT_NOT_FOUND });
@@ -61,7 +61,7 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        const updatedEmployee = await EmployeService.updateEmployee(numericId, updateData);
+        const updatedEmployee = await EmployeRepository.update(numericId, updateData);
 
         if (!updatedEmployee) {
             res.status(404).json({ error: ErrorEnum.ACCOUNT_NOT_FOUND });

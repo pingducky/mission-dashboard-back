@@ -42,7 +42,6 @@ class AuthService {
   }
 
   private static generateJwt(account: AccountModel): string {
-    // @ts-ignore
     return jwt.sign({ id: account.id, email: account.email }, SECRET_KEY, {
       expiresIn: JWT_EXPIRES_IN
     });
