@@ -1,5 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from '../config/sequelize';
+import AccountModel from "./AccountModel";
+import MissionModel from "./MissionModel";
 
 class MessageModel extends Model {
     public id!: number;
@@ -22,10 +24,18 @@ MessageModel.init(
         idAccount: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            references: {
+                model: AccountModel,
+                key: 'id',
+            },
         },
         idMission: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            references: {
+                model: MissionModel,
+                key: 'id',
+            },
         },
     },
     {

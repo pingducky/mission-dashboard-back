@@ -1,5 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize";
+import MissionTypeModel from "./MissionTypeModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -41,6 +42,10 @@ MissionModel.init(
         idMissionType: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            references: {
+                model: MissionTypeModel,
+                key: 'id',
+            },
         },
     },
     {

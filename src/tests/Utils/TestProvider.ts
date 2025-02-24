@@ -1,7 +1,10 @@
+import AccountModel from "../../models/AccountModel";
 import AuthService from "../../services/AuthService";
 
 // Fonction pour générer un token pour les tests
 export const generateAuthTokenForTest = async (): Promise<string> => {
+    await AccountModel.destroy({ where: {}, force: true });
+
     const fakeUser = {
         firstName: "John",
         lastName: "Doe",

@@ -3,7 +3,7 @@ import MissionModel from "../models/MissionModel";
 import PictureModel from "../models/PictureModel";
 import { ErrorEnum } from "../enums/errorEnum";
 import { MissionEnum } from "./enums/MissionEnum";
-import AccountMissionAssign from "../models/AccountMissionAssignModel";
+import AccountMissionAssignModel from "../models/AccountMissionAssignModel";
 import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
 import { uploadFiles } from "../services/UploadService";
@@ -12,7 +12,6 @@ import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
         const { description, timeBegin, estimatedEnd, address, timeEnd, missionTypeId, accountAssignId } = req.body;
-        let warningMessage = undefined;
         let accepedUploadedFiles: string[] = [];
         let rejectedUploadFiles: string[] = [];
 
@@ -25,7 +24,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         // Vérification du type de mission
         const missionType = await MissionTypeModel.findByPk(missionTypeId);
         if (!missionType) {
-            res.status(400).json({ message: MissionEnum.MISSION_TYPE_DOSNT_EXIST });
+            res.status(400).json({ message: MissionEnum.MISSION_TYPE_DOESNT_EXIST });
             return;
         }
 
@@ -39,16 +38,17 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             idMissionType: missionTypeId
         });
 
-        // Vérification si l'accountAssignId existe
+        // Vérification si l'account existe
         if (accountAssignId) {
             const accountExists = await AccountModel.findByPk(accountAssignId);
             if (accountExists) {
-                await AccountMissionAssign.create({
+                await AccountMissionAssignModel.create({
                     idAccount: accountAssignId,
                     idMission: newMission.id
                 });
             } else {
-                warningMessage = ErrorEnum.ACCOUNT_NOT_FOUND;
+                res.status(404).json({ message: MissionEnum.USER_NOT_FOUND });
+                return
             }
         }
 
@@ -70,7 +70,6 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         res.status(201).json({
             message: MissionEnum.MISSION_SUCCESSFULLY_CREATED,
             mission: { ...newMission.toJSON() }, 
-            warningMessage,
             rejectedUploadFiles,
             accepedUploadedFiles,
         });

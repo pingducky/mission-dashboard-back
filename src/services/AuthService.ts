@@ -10,7 +10,6 @@ class AuthService {
   public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
     const existingUser = await AccountModel.findOne({ where: { email } });
     
-    
     if (existingUser) {
       throw new Error(ErrorEnum.EMAIL_ALREADY_USED);
     }
@@ -37,7 +36,7 @@ class AuthService {
 
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
-      throw new Error(ErrorEnum.PASSWORD_INVALID);
+        throw new Error(ErrorEnum.PASSWORD_INVALID);
     }
 
     return AuthService.generateJwt(account);
