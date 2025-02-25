@@ -27,19 +27,20 @@ afterAll(async () => {
 });
 
 describe("PATCH /employees/:id/disable", () => {
+    test("Ne dois pas désactiver un employée si l\'utilisateur n'a pas les droits.", async () => {
+        // Todo : attendre une 401.
+    });
     test("Doit désactiver l'employé", async () => {
         const response = await request(app)
             .patch("/api/employees/1/disable")
             .set("Authorization", `Bearer ${authToken}`);
 
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.status).toBe(204);
     });
 
     test("Doit demander l'authentification", async () => {
         const response = await request(app)
         .patch("/api/employees/1/disable")
-        .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(401);
     });
@@ -50,7 +51,7 @@ describe("PATCH /employees/:id/disable", () => {
         .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe(ErrorEnum.ACCOUNT_NOT_FOUND);
+        expect(response.body.message).toBe(ErrorEnum.ACCOUNT_NOT_FOUND);
         expect(response.body).toHaveProperty("message");
     });
 });
