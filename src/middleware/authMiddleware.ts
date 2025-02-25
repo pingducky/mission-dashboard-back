@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorEnum } from '../enums/errorEnum';
+import AccountModel from '../models/AccountModel';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 
-interface CustomRequest extends Request {
-  token?: any;
+export interface CustomRequest extends Request {
+  user?: AccountModel;
+
 }
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +19,19 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const decoded = jwt.verify(token, SECRET_KEY);
-    (req as CustomRequest).token = decoded;
+
+        // Vérification si le token décodé est du type JwtPayload et contient un `id`
+        if (typeof decoded === 'string') {
+          return res.status(401).json({ message: ErrorEnum.INVALID_TOKEN });
+        }
+    
+        const { id } = decoded;
+        const user = await AccountModel.findByPk(id);
+        if (!user) {
+          return res.status(401).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
+        }
+    
+        (req as CustomRequest).user = user;
 
     next();
   } catch (err) {
