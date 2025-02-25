@@ -8,7 +8,7 @@ export const getRoles = async (req: Request, res: Response): Promise<void> => {
         res.status(200).json(roles);
     } catch (error: unknown) {
         if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
+            res.status(400).json({ error: error });
         } else {
             res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
         }

@@ -10,18 +10,18 @@ class AccountRoleModel extends Model {
 
 AccountRoleModel.init(
     {
-        IdAccount: {
+        idAccount: {
             type: DataTypes.INTEGER,
             references: {
                 model: AccountModel,
-                key: 'Id',
+                key: 'id',
             },
         },
-        IdRole: {
+        idRole: {
             type: DataTypes.INTEGER,
             references: {
                 model: RoleModel,
-                key: 'Id',
+                key: 'id',
             },
         },
     },
@@ -32,7 +32,7 @@ AccountRoleModel.init(
     }
 )
 
-AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'IdAccount' });
-RoleModel.belongsToMany(AccountModel, { through: AccountRoleModel, foreignKey: 'IdRole' });
+AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'idAccount' });
+RoleModel.belongsToMany(AccountModel, { through: AccountRoleModel, foreignKey: 'idRole' });
 
 export default AccountRoleModel;
