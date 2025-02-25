@@ -5,7 +5,7 @@ import { CustomRequest } from '../middleware/authMiddleware';
 
 export const disableEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { user } = req as CustomRequest; // Todo : récupérer les droits à partir du compte utilisateur qui à fait la requête
+        const { user } = req as CustomRequest; // Todo : récupère les droits à partir du compte utilisateur qui à fait la requête
         // Pas besoin de vérifier si le compte existe en base, c'est déja fait dans le middleware
 
         const id = parseInt(req.params.id, 10);
