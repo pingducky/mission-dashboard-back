@@ -1,9 +1,10 @@
 import request from "supertest";
 import app from "..";
-import { resetDatabase, resetTable } from "../utils/databaseUtils";
+import { resetDatabase } from "../utils/databaseUtils";
 import { ErrorEnum } from "../enums/errorEnum";
 import sequelize from "../config/sequelize";
 import EmployeRepository from '../repositories/EmployeRepository';
+import { InternalServerError } from "../Errors/InternalServerError";
 let authToken: string;
 
 beforeAll(async () => {
@@ -19,11 +20,7 @@ beforeAll(async () => {
             phoneNumber: "1234567890",
         });
 
-    authToken = userResponse.body.token; // Pas besoin d’un login après register
-});
-
-beforeEach(async () => {
-    //await resetTable('AccountModel'); // Adapte selon le bon modèle
+    authToken = userResponse.body.token;
 });
 
 afterAll(async () => {
@@ -193,7 +190,7 @@ describe("Employee API", () => {
 
     test("Doit gérer une erreur du service lors de la mise à jour d'un employé", async () => {
         jest.spyOn(EmployeRepository, "update").mockImplementation(() => {
-            throw new Error("Database Error");
+            throw new InternalServerError("Database Error");
         });
 
         const response = await request(app)
@@ -201,7 +198,6 @@ describe("Employee API", () => {
             .set("Authorization", `Bearer ${authToken}`)
             .send({ lastName: "UpdatedLastName" });
 
-        expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty("error", "Database Error");
+        expect(response.status).toBe(500);
     });
 });

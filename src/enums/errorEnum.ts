@@ -11,6 +11,11 @@ export enum ErrorEnum {
     UNEXPECTED_ERROR = "Une exception non géré s'est produite",
     UNAUTHORIZED_MIME_TYPE = "Type de fichier non autorisé",
     BDD_ERROR = "Erreur de base de données",
-    UPDATE_EMPTY = "Les données de mise à jour sont requises."
+    UPDATE_EMPTY = "Les données de mise à jour sont requises.",
+    NOT_FOUND = "Non trouvé",
+    UNAUTHORIZED = "Non autorisé",
+    FORBIDDEN = "Interdit",
+    INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
+    BAD_REQUEST = "Mauvaise requête"
   }
   
