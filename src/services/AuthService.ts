@@ -5,7 +5,7 @@ import { ErrorEnum } from '../enums/errorEnum';
 import { BadRequestError } from '../Errors/BadRequestError';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
+const JWT_EXPIRES_IN = '1h';
 
 class AuthService {
   public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
