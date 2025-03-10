@@ -1,13 +1,13 @@
-import { Model, DataTypes } from 'sequelize';
+import { DataTypes, Model } from "sequelize";
 import sequelize from '../config/sequelize';
 
-class RoleModel extends Model {
+class MissionTypeModel extends Model {
     public id!: number;
     public shortLibel!: string;
     public longLibel!: string;
 }
 
-RoleModel.init(
+MissionTypeModel.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -25,9 +25,9 @@ RoleModel.init(
     },
     {
         sequelize,
-        tableName: 'role',
+        tableName: 'mission_type',
         timestamps: false,
     }
 );
 
-export default RoleModel;
+export default MissionTypeModel;
