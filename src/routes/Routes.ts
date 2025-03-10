@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/AuthController';
-import { auth } from '../Middleware/authMiddleware';
+import { auth } from '../middleware/authMiddleware';
 import { getAccountById } from '../controllers/AccountController';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
 import { createMission } from '../controllers/MissionController';
@@ -17,14 +17,14 @@ router.post('/login', login);
 router.get('/account/:id', auth, getAccountById);
 
 // [Role]
-router.get('/roles', auth, getRoles);
+router.get('/role', auth, getRoles);
 
 router.post('/role', auth, createRole);
 
 // [Mission]
 router.post("/mission", auth, upload, createMission);
 
-// [employés]
+// [employe]
 router.get('/employees', auth, getAllEmployees);
 router.get ('/employees/:id', auth, getEmployeeById);
 router.patch('/employees/:id', auth, updateEmployee);

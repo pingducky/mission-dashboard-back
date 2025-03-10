@@ -20,8 +20,8 @@ class EmployeService {
         if(add) {
             return await AccountRoleModel.findOrCreate({
                 where: {
-                    IdAccount: employeId,
-                    IdRole: roleId,
+                    idAccount: employeId,
+                    idRole: roleId,
                 },
             }).then(([accountRole, created]) => {
                 return created;
@@ -30,8 +30,8 @@ class EmployeService {
 
         return await AccountRoleModel.destroy({
             where: {
-                IdAccount: employeId,
-                IdRole: roleId,
+                idAccount: employeId,
+                idRole: roleId,
             },
         }) > 0;
     }

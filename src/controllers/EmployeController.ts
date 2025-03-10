@@ -18,7 +18,6 @@ export const updateEmployeRole = async (req: Request, res: Response): Promise<vo
         const executed = await EmployeService.updateEmployeRole(employeId, roleId, add);
 
         res.status(200).json({ executed });
-        return;
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });
