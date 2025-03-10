@@ -20,6 +20,7 @@ beforeEach(async () => {
     });
 
     authToken = userResponse.body.token;
+    console.log(authToken);
 });
   
 afterAll(async () => {
@@ -55,8 +56,8 @@ describe('POST /role', () => {
         });
 
         expect(response.status).toBe(201);
-        expect(response.body).toHaveProperty('ShortLibel', 'ADMIN');
-        expect(response.body).toHaveProperty('LongLibel', 'Administrateur');
+        expect(response.body).toHaveProperty('shortLibel', 'ADMIN');
+        expect(response.body).toHaveProperty('longLibel', 'Administrateur');
     });
 
     test('Doit retourner une erreur si des champs sont manquants', async () => {
