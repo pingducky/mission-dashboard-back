@@ -5,20 +5,22 @@ import RoleModel from './RoleModel';
 
 class AccountRoleModel extends Model {
     public accountId!: number;
-    public roleId!: number;
+    public idRole!: number;
 }
 
 AccountRoleModel.init(
     {
-        IdAccount: {
+        idAccount: {
             type: DataTypes.INTEGER,
+            primaryKey: true,
             references: {
                 model: AccountModel,
                 key: 'id',
             },
         },
-        IdRole: {
+        idRole: {
             type: DataTypes.INTEGER,
+            primaryKey: true,
             references: {
                 model: RoleModel,
                 key: 'id',
@@ -32,7 +34,13 @@ AccountRoleModel.init(
     }
 )
 
-AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'accountId' });
-RoleModel.belongsToMany(AccountModel, { through: AccountRoleModel, foreignKey: 'roleId' });
+AccountRoleModel.belongsTo(AccountModel, { foreignKey: 'idAccount' });
+AccountRoleModel.belongsTo(RoleModel, { foreignKey: 'idRole' });
+
+AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'idAccount' });
+AccountModel.hasMany(AccountRoleModel, { foreignKey: 'idAccount' });
+
+RoleModel.belongsToMany(AccountModel, { through: AccountRoleModel, foreignKey: 'idRole' });
+RoleModel.hasMany(AccountRoleModel, { foreignKey: 'idRole' });
 
 export default AccountRoleModel;

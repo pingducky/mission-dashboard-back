@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/AuthController';
-import { auth } from '../Middleware/authMiddleware';
+import { auth } from '../middleware/authMiddleware';
 import { getAccountById } from '../controllers/AccountController';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
 import { createMission } from '../controllers/MissionController';
 import { disableEmployee } from '../controllers/EmployeController';
+import { createPermission } from '../controllers/PermissionController';
 import upload from '../services/UploadService';
 
 const router = Router();
@@ -22,6 +23,9 @@ router.post("/mission", auth, upload, createMission);
 router.get('/employees', auth, getAllEmployees);
 router.get ('/employees/:id', auth, getEmployeeById);
 router.patch('/employees/:id', auth, updateEmployee);
-router.patch('/employees/:id/disable', auth, disableEmployee);
+router.put('/employees/:id/disable', auth, disableEmployee);
+
+// [Permission]
+router.post('/permission', auth, createPermission);
 
 export default router;

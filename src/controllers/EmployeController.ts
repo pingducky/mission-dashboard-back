@@ -6,11 +6,17 @@ import EmployeRepository from '../repositories/EmployeRepository';
 import { handleHttpError } from '../services/ErrorService';
 import { BadRequestError } from '../Errors/BadRequestError';
 import { isValidEmail } from '../services/Email';
+import { permissionsEnum } from '../enums/permissionsEnum';
 
 export const disableEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { user } = req as CustomRequest; // Todo : récupère les droits à partir du compte utilisateur qui à fait la requête
-        // Pas besoin de vérifier si le compte existe en base, c'est déja fait dans le middleware
+        const { user } = req as CustomRequest;
+
+        if(!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))){
+            res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
+            return;
+        }
+
 
         const id = parseInt(req.params.id, 10);
         const employee = await AccountModel.findByPk(id);
