@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "jest",
     "dev": "ts-node-dev src/index.ts",
-    "test": "jest"
+    "docker-dev": "ts-node-dev --poll --respawn src/index.ts"
   },
   "keywords": [],
   "author": "",

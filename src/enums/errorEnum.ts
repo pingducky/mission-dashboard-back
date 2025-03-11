@@ -1,8 +1,10 @@
 export enum ErrorEnum {
     MISSING_REQUIRED_FIELDS = 'Certains champs requis sont manquant',
+    INVALID_FIELDS_LENGTH = 'Taille de champs invalide',
     EMAIL_ALREADY_USED = 'Email déjà utilisé',
     INVALID_EMAIL = 'Adresse email invalide',
     ACCOUNT_NOT_FOUND = "Compte non trouvé",
+    ROLE_NOT_FOUND = "Rôle non trouvé",
     PASSWORD_INVALID = "Mot de passe invalide",
     INVALID_TOKEN = "Token invalide",
     MISSING_TOKEN = "Token manquant",
