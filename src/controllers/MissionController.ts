@@ -77,3 +77,49 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ message: MissionEnum.ERROR_DURING_CREATING_MISSION });
     }
 };
+
+export const assignMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { idAccount } = req.body;
+
+        if (!id || !idAccount) {
+            res.status(400).json({ error: ErrorEnum.MISSING_REQUIRED_FIELDS });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(id);
+        if (!mission) {
+            res.status(404).json({ error: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            res.status(404).json({ error: MissionEnum.USER_NOT_FOUND });
+            return;
+        }
+
+        const assign = await AccountMissionAssignModel.findOrCreate({
+            where: {
+                idAccount,
+                idMission: id,
+            }
+        }).then((assign) => { return assign; });
+        
+        if (assign[1]) {
+            res.status(200).json({ message: MissionEnum.MISSION_ASSIGNED });
+            return;
+        } else {
+            res.status(200).json({ message: MissionEnum.MISSION_ALREADY_ASSIGNED });
+            return;
+        }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+        }
+        return;
+    }
+};
