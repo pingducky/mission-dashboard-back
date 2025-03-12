@@ -24,3 +24,23 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
 
     return token;
 };
+
+export const generateUserForTest = async (): Promise<void> => {
+
+    const fakeUser = {
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe2@example.com",
+        password: "password123",
+        phoneNumber: "1234567890",
+    };
+
+    // Appeler le service d'authentification pour créer un utilisateur
+    await AuthService.register(
+        fakeUser.firstName,
+        fakeUser.lastName,
+        fakeUser.email,
+        fakeUser.password,
+        fakeUser.phoneNumber
+    );
+};

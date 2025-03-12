@@ -5,5 +5,4 @@ export enum MissionEnum {
     USER_NOT_FOUND = "L'utilisateur spécifié n'existe pas",
     MISSION_NOT_FOUND = "La mission spécifiée n'existe pas",
     MISSION_ASSIGNED = "Mission assignée avec succès",
-    MISSION_ALREADY_ASSIGNED = "La mission est déjà assignée à cet utilisateur",
 }

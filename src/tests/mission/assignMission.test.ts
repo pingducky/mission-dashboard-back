@@ -3,7 +3,7 @@ import app  from '../..';
 import { resetDatabase } from '../../utils/databaseUtils';
 import { ErrorEnum } from '../../enums/errorEnum';
 import sequelize from '../../config/sequelize';
-import { generateAuthTokenForTest } from '../Utils/TestProvider';
+import { generateAuthTokenForTest, generateUserForTest } from '../Utils/TestProvider';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 
@@ -42,7 +42,7 @@ describe('POST /mission/:id/assign', () => {
         const response = await request(app)
             .post('/api/mission/1/assign')
             .send({
-                idAccount: 1,
+                idAccounts: [1],
             })
             .set("Authorization", `Bearer ${authToken}`);
 
@@ -50,30 +50,36 @@ describe('POST /mission/:id/assign', () => {
         expect(response.body.message).toBe(MissionEnum.MISSION_ASSIGNED);
     });
 
-    test('Doit indiquer que la mission est déjà assignée à l\'utilisateur', async () => {
-        await request(app)
-            .post('/api/mission/1/assign')
-            .send({
-                idAccount: 1,
-            })
-            .set("Authorization", `Bearer ${authToken}`);
-
+    test('Doit assigner une mission à plusieurs employés', async () => {
+        await generateUserForTest();
         const response = await request(app)
             .post('/api/mission/1/assign')
             .send({
-                idAccount: 1,
+                idAccounts: [1, 2],
             })
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.message).toBe(MissionEnum.MISSION_ALREADY_ASSIGNED);
+        expect(response.body.message).toBe(MissionEnum.MISSION_ASSIGNED);
+    });
+
+    test('Doit renvoyer un erreur, mauvais type de champ', async () => {
+        const response = await request(app)
+            .post('/api/mission/1/assign')
+            .send({
+                idAccounts: 1,
+            })
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(ErrorEnum.INVALID_FILED_TYPE);
     });
 
     test('Doit retourner une erreur si la mission n\'existe pas', async () => {
         const response = await request(app)
             .post('/api/mission/99999/assign')
             .send({
-                idAccount: 1,
+                idAccounts: [1],
             })
             .set("Authorization", `Bearer ${authToken}`);
 
@@ -85,7 +91,7 @@ describe('POST /mission/:id/assign', () => {
         const response = await request(app)
             .post('/api/mission/1/assign')
             .send({
-                idAccount: 9999,
+                idAccounts: [9999],
             })
             .set("Authorization", `Bearer ${authToken}`);
 
@@ -107,7 +113,7 @@ describe('POST /mission/:id/assign', () => {
         const response = await request(app)
             .post('/api/mission/1/assign')
             .send({
-                idAccount: 1,
+                idAccounts: [1],
             })
 
         expect(response.status).toBe(401);

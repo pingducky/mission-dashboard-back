@@ -8,6 +8,7 @@ import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
 import { uploadFiles } from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
+import sequelize from "../config/sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -81,10 +82,15 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
 export const assignMission = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { idAccount } = req.body;
+        const { idAccounts } = req.body;
 
-        if (!id || !idAccount) {
+        if (!id || !idAccounts) {
             res.status(400).json({ error: ErrorEnum.MISSING_REQUIRED_FIELDS });
+            return;
+        }
+
+        if(!Array.isArray(idAccounts)) {
+            res.status(400).json({ error: ErrorEnum.INVALID_FILED_TYPE });
             return;
         }
 
@@ -94,26 +100,29 @@ export const assignMission = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        const account = await AccountModel.findByPk(idAccount);
-        if (!account) {
-            res.status(404).json({ error: MissionEnum.USER_NOT_FOUND });
-            return;
-        }
+        const transaction = await sequelize.transaction();
 
-        const assign = await AccountMissionAssignModel.findOrCreate({
-            where: {
-                idAccount,
-                idMission: id,
+        await AccountMissionAssignModel.destroy({
+            where: { idMission: id }
+        });
+
+        for (const idAccount of idAccounts) {
+            const account = await AccountModel.findByPk(idAccount);
+            if (!account) {
+                transaction.rollback();
+                res.status(404).json({ error: MissionEnum.USER_NOT_FOUND });
+                return;
             }
-        }).then((assign) => { return assign; });
-        
-        if (assign[1]) {
-            res.status(200).json({ message: MissionEnum.MISSION_ASSIGNED });
-            return;
-        } else {
-            res.status(200).json({ message: MissionEnum.MISSION_ALREADY_ASSIGNED });
-            return;
+
+            await AccountMissionAssignModel.create({
+                idAccount: idAccount,
+                idMission: id
+            });
+            
         }
+        transaction.commit();
+
+        res.status(200).json({ message: MissionEnum.MISSION_ASSIGNED });
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });
