@@ -8,13 +8,14 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 
 let authToken: string;
+
 beforeEach(async () => {
     await resetDatabase();
 
     authToken = await generateAuthTokenForTest();
 
     //Création d'un type de mission
-    MissionTypeModel.create({
+    await MissionTypeModel.create({
         id: 1,
         longLibel: "Test Mission Type",
         shortLibel: "Test",
@@ -110,6 +111,6 @@ describe('POST /mission/:id/assign', () => {
             })
 
         expect(response.status).toBe(401);
-        expect(response.body.error).toBe(ErrorEnum.MISSING_TOKEN);
+        expect(response.body.error).toBe(ErrorEnum.PLEASE_AUTHENTICATE);
     });
 });
