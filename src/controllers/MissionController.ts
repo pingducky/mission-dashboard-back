@@ -8,6 +8,7 @@ import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
 import { uploadFiles } from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
+import sequelize from "../config/sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -77,3 +78,70 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ message: MissionEnum.ERROR_DURING_CREATING_MISSION });
     }
 };
+
+export const updateMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { description, timeBegin, estimatedEnd, address, timeEnd, missionTypeId, accountAssignIds } = req.body;
+        const missionId = req.params.id;
+
+        if (!description || !timeBegin || !address || !missionTypeId || !missionId) {
+            res.status(400).json({ message: ErrorEnum.MISSING_REQUIRED_FIELDS });
+            return;
+        }
+
+        let mission = await MissionModel.findByPk(missionId);
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        const missionType = await MissionTypeModel.findByPk(missionTypeId);
+        if (!missionType) {
+            res.status(404).json({ message: MissionEnum.MISSION_TYPE_DOESNT_EXIST });
+            return;
+        }
+
+        const transaction = await sequelize.transaction();
+
+        await MissionModel.update({
+            description,
+            timeBegin,
+            timeEnd,
+            estimatedEnd,
+            address,
+            idMissionType: missionTypeId
+        }, {
+            where: { id: missionId }
+        });
+
+        if (accountAssignIds) {
+            await AccountMissionAssignModel.destroy({
+                where: { idMission: missionId }
+            });
+
+            for (const accountId of accountAssignIds) {
+                const account = await AccountModel.findByPk(accountId);
+                if (!account) {
+                    transaction.rollback();
+                    res.status(404).json({ message: MissionEnum.USER_NOT_FOUND });
+                    return;
+                }
+
+                await AccountMissionAssignModel.create({
+                    idAccount: accountId,
+                    idMission: missionId
+                });
+                
+            }
+        }
+
+        transaction.commit();
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+        }
+        return;
+    }
+}
