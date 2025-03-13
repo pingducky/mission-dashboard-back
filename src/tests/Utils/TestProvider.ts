@@ -1,6 +1,7 @@
 import AccountModel from "../../models/AccountModel";
 import AuthService from "../../services/AuthService";
 
+let isTokenGenerated: boolean = false;
 // Fonction pour générer un token pour les tests
 export const generateAuthTokenForTest = async (): Promise<string> => {
     await AccountModel.destroy({ where: {}, force: true });
@@ -22,15 +23,30 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         fakeUser.phoneNumber
     );
 
+    isTokenGenerated = true;
+
     return token;
 };
 
-export const generateUserForTest = async (): Promise<void> => {
 
+let supposedId: number = 0;
+/**
+ *  Generate a user for test purpose
+ * @returns supposedId the supposed id of the user created
+ */
+export const generateUserForTest = async (isFirstInTest: boolean = false) : Promise<number> => {
+    if(isFirstInTest) {
+        supposedId = 0;
+        if(isTokenGenerated) {
+            supposedId++;
+        }
+    }
+
+    supposedId++;
     const fakeUser = {
         firstName: "John",
         lastName: "Doe",
-        email: "john.doe2@example.com",
+        email: "john.doe"+supposedId.toString()+"@example.com",
         password: "password123",
         phoneNumber: "1234567890",
     };
@@ -43,4 +59,6 @@ export const generateUserForTest = async (): Promise<void> => {
         fakeUser.password,
         fakeUser.phoneNumber
     );
+
+    return supposedId;
 };

@@ -51,11 +51,10 @@ describe('POST /mission/:id/assign', () => {
     });
 
     test('Doit assigner une mission à plusieurs employés', async () => {
-        await generateUserForTest();
         const response = await request(app)
             .post('/api/mission/1/assign')
             .send({
-                idAccounts: [1, 2],
+                idAccounts: [1, await generateUserForTest(true), await generateUserForTest()],
             })
             .set("Authorization", `Bearer ${authToken}`);
 
