@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize";
 import MissionTypeModel from "./MissionTypeModel";
+import PictureModel from "./PictureModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -10,6 +11,8 @@ class MissionModel extends Model {
     public estimatedEnd?: Date;
     public address!: string;
     public idMissionType!: number;
+
+    public pictures?: PictureModel[];
 }
 
 MissionModel.init(
@@ -54,5 +57,18 @@ MissionModel.init(
         timestamps: false,
     }
 );
+
+// ✅ Définir la relation One-To-Many avec PictureModel
+MissionModel.hasMany(PictureModel, {
+    foreignKey: 'idMission',
+    as: 'pictures',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+PictureModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission'
+});
 
 export default MissionModel;

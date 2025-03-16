@@ -78,43 +78,41 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
     }
 };
 
-export const getMissionDetails = async (req: Request, res: Response): Promise<void> => {
+export const getMissionById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { missionId } = req.params;
+        const { id } = req.params;
 
-        // Vérification de l'existence de la mission
-        const mission = await MissionModel.findByPk(missionId);
-
-        if (!mission) {
-            res.status(404).json({ message: "Mission non trouvée." });
+        //Conversion en nombre
+        const missionId = Number(id);
+        if (isNaN(missionId)) {
+            res.status(400).json({ message: ErrorEnum.ID_INVALID });
             return;
         }
 
-        // Récupérer les images associées à la mission
-        const pictures = await PictureModel.findAll({
-            where: { idMission: mission.id }
+        //Recherche de la mission avec jointure des photos
+        const mission = await MissionModel.findByPk(missionId, {
+            include: [
+                {
+                    model: PictureModel,
+                    as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path']
+                }
+            ]
         });
 
-        // Retourner les détails de la mission avec ses images
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
         res.status(200).json({
             mission: {
-                id: mission.id,
-                description: mission.description,
-                timeBegin: mission.timeBegin,
-                timeEnd: mission.timeEnd,
-                estimatedEnd: mission.estimatedEnd,
-                address: mission.address,
-                missionTypeId: mission.idMissionType
-            },
-            pictures: pictures.map(picture => ({
-                id: picture.id,
-                name: picture.name,
-                alt: picture.alt,
-                path: picture.path
-            }))
+                ...mission.toJSON(),
+                pictures: mission.pictures || []
+            }
         });
+
     } catch (error) {
-        console.error("Erreur lors de la récupération des détails de la mission :", error);
-        res.status(500).json({ message: "Une erreur est survenue lors de la récupération des détails de la mission." });
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
     }
 };

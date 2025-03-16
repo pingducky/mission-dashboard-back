@@ -8,6 +8,9 @@ class MessageModel extends Model {
     public message!: string;
     public idAccount!: number;
     public idMission!: number;
+
+    public account?: AccountModel;
+    public mission?: MissionModel;
 }
 
 MessageModel.init(
@@ -25,7 +28,7 @@ MessageModel.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: AccountModel,
+                model: 'account',
                 key: 'id',
             },
         },
@@ -33,7 +36,7 @@ MessageModel.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: MissionModel,
+                model: 'mission',
                 key: 'id',
             },
         },
@@ -44,5 +47,18 @@ MessageModel.init(
         timestamps: false,
     }
 );
+
+// Vérification pour éviter les erreurs circulaires
+if (AccountModel && MissionModel) {
+    MessageModel.belongsTo(AccountModel, {
+        foreignKey: 'idAccount',
+        as: 'account'
+    });
+
+    MessageModel.belongsTo(MissionModel, {
+        foreignKey: 'idMission',
+        as: 'mission'
+    });
+}
 
 export default MessageModel;
