@@ -4,6 +4,7 @@ import { resetDatabase } from '../utils/databaseUtils';
 import { ErrorEnum } from '../enums/errorEnum';
 import sequelize from '../config/sequelize';
 
+
 beforeEach(async () => {
   await resetDatabase();
 });
