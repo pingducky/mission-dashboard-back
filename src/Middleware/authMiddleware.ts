@@ -20,11 +20,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     (req as CustomRequest).token = decoded;
 
     next();
-  } catch (err) {
+  } catch (err: unknown) {
     if (err instanceof jwt.JsonWebTokenError) {
-      res.status(401).send(ErrorEnum.INVALID_SIGNATURE_OR_INCORRECT_TOKEN);
+      res.status(401).send({error: ErrorEnum.INVALID_SIGNATURE_OR_INCORRECT_TOKEN});
     } else {
-      res.status(401).send(ErrorEnum.PLEASE_AUTHENTICATE);
+      res.status(401).send({error: ErrorEnum.PLEASE_AUTHENTICATE});
     }
   }
 };

@@ -8,6 +8,7 @@ import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
 import { uploadFiles } from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
+import sequelize from "../config/sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -75,5 +76,59 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         });
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_CREATING_MISSION });
+    }
+};
+
+export const assignMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { idAccounts } = req.body;
+
+        if (!id || !idAccounts) {
+            res.status(400).json({ error: ErrorEnum.MISSING_REQUIRED_FIELDS });
+            return;
+        }
+
+        if(!Array.isArray(idAccounts)) {
+            res.status(400).json({ error: ErrorEnum.INVALID_FILED_TYPE });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(id);
+        if (!mission) {
+            res.status(404).json({ error: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        const transaction = await sequelize.transaction();
+
+        await AccountMissionAssignModel.destroy({
+            where: { idMission: id }
+        });
+
+        for (const idAccount of idAccounts) {
+            const account = await AccountModel.findByPk(idAccount);
+            if (!account) {
+                transaction.rollback();
+                res.status(404).json({ error: MissionEnum.USER_NOT_FOUND });
+                return;
+            }
+
+            await AccountMissionAssignModel.create({
+                idAccount: idAccount,
+                idMission: id
+            });
+            
+        }
+        transaction.commit();
+
+        res.status(200).json({ message: MissionEnum.MISSION_ASSIGNED });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
+        }
+        return;
     }
 };
