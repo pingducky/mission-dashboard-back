@@ -1,5 +1,7 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import sequelize from "../config/sequelize";
+import MissionModel from "./MissionModel";
+import AccountMissionAssignModel from "./AccountMissionAssignModel";
 
 class AccountModel extends Model {
     public id!: number;

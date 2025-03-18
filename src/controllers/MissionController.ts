@@ -116,3 +116,60 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
     }
 };
+
+
+export const getMissionsByEmployeeId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        // ✅ Récupération de l'ID de l'employé depuis le token décodé
+        const employeeId = (req as any).token?.id;
+
+        console.log('👤 Utilisateur connecté ID :', employeeId);
+        if (!employeeId) {
+            res.status(401).json({ message: 'Utilisateur non authentifié' });
+            return;
+        }
+
+        console.log(`🔎 Récupération des missions pour l'employé ID : ${employeeId}`);
+
+        // ✅ Construction des filtres dynamiques
+        const { status, missionTypeId } = req.query;
+
+        const whereCondition: any = {};
+        if (status) {
+            whereCondition.status = status;
+        }
+        if (missionTypeId) {
+            whereCondition.idMissionType = missionTypeId;
+        }
+
+        // ✅ Récupération des missions avec jointure sur AccountModel
+        const missions = await MissionModel.findAll({
+            where: whereCondition,
+            include: [
+                {
+                    model: MissionTypeModel,
+                    as: 'missionType',
+                    attributes: ['id', 'shortLibel', 'longLibel'],
+                },
+                {
+                    model: PictureModel,
+                    as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path'],
+                },
+                {
+                    model: AccountModel,
+                    as: 'assignedAccounts',
+                    through: { attributes: [] },
+                    where: { id: employeeId },
+                },
+            ],
+        });
+
+        console.log(`✅ ${missions.length} missions trouvées`);
+
+        res.status(200).json({ missions });
+    } catch (error) {
+        console.error(`❌ Erreur lors de la récupération des missions :`, error);
+        res.status(500).json({ message: 'Erreur lors de la récupération des missions.' });
+    }
+};

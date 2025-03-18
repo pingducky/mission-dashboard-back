@@ -10,6 +10,7 @@ class AccountMissionLinked extends Model {
     public spentTime!: number;
 }
 
+
 AccountMissionLinked.init(
     {
         idAccount: {
@@ -39,22 +40,6 @@ AccountMissionLinked.init(
         timestamps: false,
     }
 );
-
-AccountModel.belongsToMany(MissionModel, { 
-    through: AccountMissionLinked, 
-    foreignKey: 'idAccount', 
-    otherKey: 'idMission',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
-
-MissionModel.belongsToMany(AccountModel, { 
-    through: AccountMissionLinked, 
-    foreignKey: 'idMission', 
-    otherKey: 'idAccount',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
 
 export default AccountMissionLinked;
 

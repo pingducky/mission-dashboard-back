@@ -28,20 +28,4 @@ AccountMissionAssignModel.init(
     }
 );
 
-AccountModel.belongsToMany(MissionModel, { 
-    through: AccountMissionAssignModel, 
-    foreignKey: 'idAccount', 
-    otherKey: 'idMission',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
-
-MissionModel.belongsToMany(AccountModel, { 
-    through: AccountMissionAssignModel, 
-    foreignKey: 'idMission', 
-    otherKey: 'idAccount',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-});
-
 export default AccountMissionAssignModel;
