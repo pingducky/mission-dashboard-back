@@ -1,4 +1,3 @@
-// src/models/associations.ts
 import MessageModel from "./MessageModel";
 
 export default function defineAssociations() {
@@ -8,29 +7,10 @@ export default function defineAssociations() {
     const PictureModel = require('./PictureModel').default;
     const AccountMissionAssignModel = require('./AccountMissionAssignModel').default;
 
-    // Define associations after all models are loaded
+    // Relation One-to-One entre Mission et MissionType
     MissionModel.belongsTo(MissionTypeModel, {
         foreignKey: 'idMissionType',
         as: 'missionType'
-    });
-
-    MissionModel.hasMany(PictureModel, {
-        foreignKey: 'idMission',
-        as: 'pictures'
-    });
-
-    MissionModel.belongsToMany(AccountModel, {
-        through: AccountMissionAssignModel,
-        foreignKey: 'idMission',
-        otherKey: 'idAccount',
-        as: 'assignedAccounts'  // Ajout de l'alias explicite
-    });
-
-    AccountModel.belongsToMany(MissionModel, {
-        through: AccountMissionAssignModel,
-        foreignKey: 'idAccount',
-        otherKey: 'idMission',
-        as: 'missions'  // Ajout d'un alias explicite
     });
 
     // ✅ Relation One-to-Many entre Mission et Picture
@@ -44,6 +24,21 @@ export default function defineAssociations() {
     PictureModel.belongsTo(MissionModel, {
         foreignKey: 'idMission',
         as: 'linkedMission'
+    });
+
+    // ✅ Relation Many-to-Many entre Mission et Account
+    MissionModel.belongsToMany(AccountModel, {
+        through: AccountMissionAssignModel,
+        foreignKey: 'idMission',
+        otherKey: 'idAccount',
+        as: 'assignedAccounts'
+    });
+
+    AccountModel.belongsToMany(MissionModel, {
+        through: AccountMissionAssignModel,
+        foreignKey: 'idAccount',
+        otherKey: 'idMission',
+        as: 'missions'
     });
 
     // ✅ Relation One-to-Many entre Message et Picture
