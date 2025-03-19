@@ -69,4 +69,18 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 }
 }).array("pictures", 10);
 
+export const deleteFile = async (filePath: string): Promise<void> => {
+    try {
+        if (fs.existsSync(filePath)) {
+            await fs.promises.unlink(filePath);
+            console.log(`Fichier supprimé : ${filePath}`);
+        } else {
+            console.warn(`Fichier introuvable : ${filePath}`);
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la suppression du fichier : ${filePath}`, error);
+        throw new Error(ErrorEnum.FILE_DELETE_ERROR);
+    }
+};
+
 export default upload;

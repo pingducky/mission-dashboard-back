@@ -17,6 +17,7 @@ export enum ErrorEnum {
     FORBIDDEN = "Interdit",
     INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
     BAD_REQUEST = "Mauvaise requête",
-    ID_INVALID = "ID de mission invalide."
+    ID_INVALID = "ID de mission invalide.",
+    FILE_DELETE_ERROR = "Erreur lors de la suppression du fichier"
   }
   

@@ -6,8 +6,9 @@ import { MissionEnum } from "./enums/MissionEnum";
 import AccountMissionAssignModel from "../models/AccountMissionAssignModel";
 import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
-import { uploadFiles } from "../services/UploadService";
+import {deleteFile, uploadFiles} from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
+import fs from "fs";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -114,5 +115,43 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+    }
+};
+
+export const deleteMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { missionId } = req.params;
+
+        if (!missionId || isNaN(Number(missionId))) {
+            res.status(400).json({ message: MissionEnum.INVALID_MISSION_ID });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(missionId);
+
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        await AccountMissionAssignModel.destroy({
+            where: { idMission: missionId }
+        });
+
+        const pictures = await PictureModel.findAll({ where: { idMission: missionId } });
+        for (const picture of pictures) {
+            if (fs.existsSync(picture.path)) {
+                fs.unlinkSync(picture.path);
+            }
+        }
+
+        await PictureModel.destroy({ where: { idMission: missionId } });
+
+        await mission.destroy({ force: true });
+
+        res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la mission :", error);
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_DELETING_MISSION });
     }
 };
