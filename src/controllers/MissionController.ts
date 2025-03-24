@@ -8,6 +8,7 @@ import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
 import { uploadFiles } from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
+import MessageModel from "../models/MessageModel";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -96,6 +97,18 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
                     model: PictureModel,
                     as: 'pictures',
                     attributes: ['id', 'name', 'alt', 'path']
+                },
+                {
+                    model: MessageModel,
+                    as: 'missionMessages', // 🔥 Mettre à jour avec le nouvel alias
+                    attributes: ['id', 'message', 'idAccount', 'idMission'],
+                    include: [
+                        {
+                            model: AccountModel,
+                            as: 'account',
+                            attributes: ['id', 'firstName', 'lastName', 'email']
+                        }
+                    ]
                 }
             ]
         });
@@ -114,5 +127,46 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+    }
+};
+
+export const addCommentToMission = async (req: Request, res: Response) => {
+    try {
+        const { message, idAccount, idMission } = req.body;
+
+        // Vérification des champs obligatoires
+        if (!message || !idAccount || !idMission) {
+            res.status(400).json({ message: ErrorEnum.MISSING_REQUIRED_FIELDS });
+            return;
+        }
+
+        // Vérification que le compte existe
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            res.status(404).json({ message: "Compte introuvable" });
+            return;
+        }
+
+        // Vérification que la mission existe
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            res.status(404).json({ message: "Mission introuvable" });
+            return;
+        }
+
+        // Création du commentaire
+        const comment = await MessageModel.create({
+            message,
+            idAccount,
+            idMission
+        });
+
+        res.status(201).json({
+            message: "Commentaire ajouté avec succès",
+            comment
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de l'ajout du commentaire", error });
+        return;
     }
 };

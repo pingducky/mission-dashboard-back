@@ -48,4 +48,30 @@ export default function defineAssociations() {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     });
+
+    // ✅ Relation One-to-Many entre Mission et Message
+    MissionModel.hasMany(MessageModel, {
+        foreignKey: 'idMission',
+        as: 'missionMessages',
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    });
+
+    MessageModel.belongsTo(MissionModel, {
+        foreignKey: 'idMission',
+        as: 'mission'
+    });
+
+// ✅ Relation One-to-Many entre Account et Message (déjà définie dans MessageModel)
+    AccountModel.hasMany(MessageModel, {
+        foreignKey: 'idAccount',
+        as: 'accountMessages',
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    });
+
+    MessageModel.belongsTo(AccountModel, {
+        foreignKey: 'idAccount',
+        as: 'account'
+    });
 }

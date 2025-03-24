@@ -2,6 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize";
 import MissionTypeModel from "./MissionTypeModel";
 import PictureModel from "./PictureModel";
+import MessageModel from "./MessageModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -13,6 +14,8 @@ class MissionModel extends Model {
     public idMissionType!: number;
 
     public pictures?: PictureModel[];
+    public messages?: MessageModel[];
+
 }
 
 MissionModel.init(
@@ -57,5 +60,13 @@ MissionModel.init(
         timestamps: false,
     }
 );
+
+// Ajout de la relation
+MissionModel.hasMany(MessageModel, {
+    foreignKey: 'idMission',
+    as: 'messages',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
 export default MissionModel;
