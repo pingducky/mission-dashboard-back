@@ -134,27 +134,26 @@ export const addCommentToMission = async (req: Request, res: Response) => {
     try {
         const { message, idAccount, idMission } = req.body;
 
-        // Vérification des champs obligatoires
+        //Vérification des champs obligatoires
         if (!message || !idAccount || !idMission) {
             res.status(400).json({ message: ErrorEnum.MISSING_REQUIRED_FIELDS });
             return;
         }
 
-        // Vérification que le compte existe
         const account = await AccountModel.findByPk(idAccount);
         if (!account) {
-            res.status(404).json({ message: "Compte introuvable" });
+            res.status(404).json({ message: MissionEnum.USER_NOT_FOUND });
+            // res.status(404).json({ message: "Compte introuvable" });
             return;
         }
 
-        // Vérification que la mission existe
         const mission = await MissionModel.findByPk(idMission);
         if (!mission) {
-            res.status(404).json({ message: "Mission introuvable" });
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            // res.status(404).json({ message: "Mission introuvable" });
             return;
         }
 
-        // Création du commentaire
         const comment = await MessageModel.create({
             message,
             idAccount,
@@ -162,11 +161,12 @@ export const addCommentToMission = async (req: Request, res: Response) => {
         });
 
         res.status(201).json({
-            message: "Commentaire ajouté avec succès",
+            message: MissionEnum.COMMENT_SUCCESSFULLY_ADDED,
             comment
         });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de l'ajout du commentaire", error });
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_COMMENT_CREATION, error });
+        // res.status(500).json({ message: "Erreur lors de l'ajout du commentaire", error });
         return;
     }
 };

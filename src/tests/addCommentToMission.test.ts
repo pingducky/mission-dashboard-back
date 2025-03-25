@@ -19,14 +19,12 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    // Création d'un type de mission
     await MissionTypeModel.create({
         id: 1,
         longLibel: "Test Mission Type",
         shortLibel: "Test"
     });
 
-    // Création d'un compte test
     testAccount = await AccountModel.create({
         firstName: "Test",
         lastName: "User",
@@ -38,7 +36,6 @@ beforeAll(async () => {
         isEnabled: true,
     });
 
-    // Création d'une mission test
     testMission = await MissionModel.create({
         description: "Test mission",
         timeBegin: new Date(),
@@ -68,14 +65,14 @@ describe("Ajout de commentaires à une mission", () => {
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(201);
-        expect(response.body.message).toBe("Commentaire ajouté avec succès");
+        expect(response.body.message).toBe(MissionEnum.COMMENT_SUCCESSFULLY_ADDED);
         expect(response.body.comment).toMatchObject({
             message: "Super mission !",
             idAccount: testAccount.id,
             idMission: testMission.id
         });
 
-        // Vérification que le commentaire a bien été ajouté dans la base de données
+        //Vérification que le commentaire a bien été ajouté dans la base de données
         const comment = await MessageModel.findOne({ where: { idMission: testMission.id } });
         expect(comment).not.toBeNull();
         expect(comment!.message).toBe("Super mission !");
@@ -86,13 +83,13 @@ describe("Ajout de commentaires à une mission", () => {
             .post('/api/mission/1/comment')
             .send({
                 message: "Super mission !",
-                idAccount: 9999, // Compte inexistant
+                idAccount: 9999,
                 idMission: testMission.id
             })
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Compte introuvable");
+        expect(response.body.message).toBe(MissionEnum.USER_NOT_FOUND);
     });
 
     test("Échec lors de l'ajout d'un commentaire avec une mission inexistante", async () => {
@@ -101,12 +98,12 @@ describe("Ajout de commentaires à une mission", () => {
             .send({
                 message: "Super mission !",
                 idAccount: testAccount.id,
-                idMission: 9999 // Mission inexistante
+                idMission: 9999
             })
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Mission introuvable");
+        expect(response.body.message).toBe(MissionEnum.MISSION_NOT_FOUND);
     });
 
     test("Échec lors de l'ajout d'un commentaire avec des champs manquants", async () => {
