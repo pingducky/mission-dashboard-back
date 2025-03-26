@@ -6,6 +6,7 @@ import RoleModel from './RoleModel';
 import AccountMissionAssignModel from './AccountMissionAssignModel';
 import AccountMissionLinked from "./AccountMissionLinkedModel";
 import AccountRoleModel from './AccountRoleModel';
+import sequelize from "../config/sequelize";
 import AccountModel from "./AccountModel";
 import defineAssociations from "./Associations";
 
@@ -46,10 +47,11 @@ const initModels = async () => {
         await AccountRoleModel.sync({ alter: true });
         console.log('✅ Table AccountRole synchronisée');
 
+        await AccountMissionAssignModel.sync({ alter: true });
+
     } catch (error) {
         console.error('❌ Erreur lors de la synchronisation des tables :', error);
     }
 };
 
 export default initModels;
-

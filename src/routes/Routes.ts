@@ -3,7 +3,11 @@ import { register, login } from '../controllers/AuthController';
 import { auth } from '../Middleware/authMiddleware';
 import { getAccountById } from '../controllers/AccountController';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
-import {createMission, getMissionById, getMissionsByEmployeeId} from '../controllers/MissionController';
+import {
+    createMission,
+    getMissionById,
+    getMyMissions,
+} from '../controllers/MissionController';
 import upload from '../services/UploadService';
 
 const router = Router();
@@ -17,8 +21,8 @@ router.get('/account/:id', auth, getAccountById);
 
 // [Mission]
 router.post("/mission", auth, upload, createMission);
-router.get('/missions', auth, getMissionsByEmployeeId);
 router.get('/mission/:id', auth, getMissionById);
+router.get('/mission', auth, getMyMissions);
 
 // [employés]
 router.get('/employees', auth, getAllEmployees);

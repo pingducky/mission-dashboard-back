@@ -14,6 +14,7 @@ class AccountModel extends Model {
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
+    public missions?: MissionModel[];
 }
 
 AccountModel.init(
