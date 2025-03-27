@@ -1,14 +1,14 @@
 import request from 'supertest';
-import sequelize from "../config/sequelize";
-import { resetDatabase } from "../utils/databaseUtils";
-import app from "..";
-import { ErrorEnum } from '../enums/errorEnum';
-import MissionTypeModel from '../models/MissionTypeModel';
-import { MissionEnum } from '../controllers/enums/MissionEnum';
-import AccountModel from '../models/AccountModel';
-import MessageModel from '../models/MessageModel';
-import MissionModel from '../models/MissionModel';
-import { generateAuthTokenForTest } from './Utils/TestProvider';
+import sequelize from "../../config/sequelize";
+import { resetDatabase } from "../../utils/databaseUtils";
+import app from "../../index";
+import { ErrorEnum } from '../../enums/errorEnum';
+import MissionTypeModel from '../../models/MissionTypeModel';
+import { MissionEnum } from '../../controllers/enums/MissionEnum';
+import AccountModel from '../../models/AccountModel';
+import MessageModel from '../../models/MessageModel';
+import MissionModel from '../../models/MissionModel';
+import { generateAuthTokenForTest } from '../Utils/TestProvider';
 
 let authToken: string;
 let testAccount: AccountModel;
