@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/AuthController';
+import { register, login, disconnect } from '../controllers/AuthController';
 import { auth } from '../Middleware/authMiddleware';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
 import { createMission } from '../controllers/MissionController';
@@ -10,6 +10,7 @@ const router = Router();
 // [Authentification]
 router.post('/register', register);
 router.post('/login', login);
+router.post('/disconnect', disconnect)
 
 // [Mission]
 router.post("/mission", auth, upload, createMission);
