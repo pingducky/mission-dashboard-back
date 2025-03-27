@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { auth } from "../Middleware/authMiddleware";
-import { getAllEmployees, getEmployeeById, updateEmployee } from "../controllers/EmployeController";
+import { disableEmployee, getAllEmployees, getEmployeeById, updateEmployee } from "../controllers/EmployeController";
+import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
 
@@ -95,5 +95,7 @@ router.get ('/:id', auth, getEmployeeById);
  *         description: Employé non trouvé
  */
 router.patch('/:id', auth, updateEmployee);
+
+router.put('/:id/disable', auth, disableEmployee)
 
 module.exports = router;

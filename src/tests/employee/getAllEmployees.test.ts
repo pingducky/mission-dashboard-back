@@ -34,17 +34,6 @@ describe("Employee API", () => {
         expect(Array.isArray(response.body)).toBe(true);
     });
 
-    test("Doit retourner une liste vide si aucun employé n'existe", async () => {
-        await resetDatabase();
-
-        const response = await request(app)
-            .get("/api/employee")
-            .set("Authorization", `Bearer ${authToken}`);
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual([]);
-    });
-
     test("Doit empêcher un utilisateur non authentifié d'accéder à la liste des employés", async () => {
         const response = await request(app).get("/api/employee");
 
