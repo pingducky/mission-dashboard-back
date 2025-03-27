@@ -9,6 +9,10 @@ import MissionTypeModel from "../models/MissionTypeModel";
 import {deleteFile, uploadFiles} from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 import fs from "fs";
+import { handleHttpError } from "../services/ErrorService";
+import { BadRequestError } from "../Errors/BadRequestError";
+import { NotFoundError } from "../Errors/NotFoundError";
+import {InternalServerError} from "../Errors/InternalServerError";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -18,15 +22,13 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
 
         // Vérification des champs obligatoires
         if (!description || !timeBegin || !address || !missionTypeId) {
-            res.status(400).json({ message: ErrorEnum.MISSING_REQUIRED_FIELDS });
-            return;
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS)
         }
 
         // Vérification du type de mission
         const missionType = await MissionTypeModel.findByPk(missionTypeId);
         if (!missionType) {
-            res.status(400).json({ message: MissionEnum.MISSION_TYPE_DOESNT_EXIST });
-            return;
+            throw new BadRequestError(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
         }
 
         // Création de la mission
@@ -48,8 +50,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
                     idMission: newMission.id
                 });
             } else {
-                res.status(404).json({ message: MissionEnum.USER_NOT_FOUND });
-                return
+                throw new NotFoundError(MissionEnum.USER_NOT_FOUND)
             }
         }
 
@@ -75,7 +76,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             accepedUploadedFiles,
         });
     } catch (error) {
-        res.status(500).json({ message: MissionEnum.ERROR_DURING_CREATING_MISSION });
+        handleHttpError(error, res);
     }
 };
 
@@ -115,6 +116,7 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+        return;
     }
 };
 
