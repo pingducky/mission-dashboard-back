@@ -6,7 +6,7 @@ import AccountModel from '../models/AccountModel';
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 
 export interface CustomRequest extends Request {
-  user?: AccountModel;
+  user: AccountModel;
 
 }
 
@@ -22,13 +22,15 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
         // Vérification si le token décodé est du type JwtPayload et contient un `id`
         if (typeof decoded === 'string') {
-          return res.status(401).json({ message: ErrorEnum.INVALID_TOKEN });
+            res.status(401).json({ message: ErrorEnum.INVALID_TOKEN });
+            return;
         }
     
         const { id } = decoded;
         const user = await AccountModel.findByPk(id);
         if (!user) {
-          return res.status(401).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
+            res.status(401).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
+            return;
         }
     
         (req as CustomRequest).user = user;

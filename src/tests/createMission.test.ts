@@ -126,7 +126,6 @@ afterAll(async () => {
     });
 
     test('Test de la création d\'une mission avec upload d\'un fichier qui n\'est pas une image.', async () => {
-        console.log("TOTOTOTO")
         if (!process.env.FILES_UPLOAD_OUTPUT) {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }

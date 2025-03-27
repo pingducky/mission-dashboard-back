@@ -1,5 +1,6 @@
 export enum ErrorEnum {
     MISSING_REQUIRED_FIELDS = 'Certains champs requis sont manquant',
+    INVALID_FIELDS_LENGTH = 'Taille de champs invalide',
     EMAIL_ALREADY_USED = 'Email déjà utilisé',
     INVALID_EMAIL = 'Adresse email invalide',
     ACCOUNT_NOT_FOUND = "Compte non trouvé",
@@ -9,6 +10,13 @@ export enum ErrorEnum {
     INVALID_SIGNATURE_OR_INCORRECT_TOKEN = "Signature invalide ou jeton incorrect",
     PLEASE_AUTHENTICATE = "Veuillez vous authentifier",
     UNEXPECTED_ERROR = "Une exception non géré s'est produite",
-    UNAUTHORIZED_MIME_TYPE = "Type de fichier non autorisé"
-  }
+    UNAUTHORIZED_MIME_TYPE = "Type de fichier non autorisé",
+    BDD_ERROR = "Erreur de base de données",
+    UPDATE_EMPTY = "Les données de mise à jour sont requises.",
+    NOT_FOUND = "Non trouvé",
+    UNAUTHORIZED = "Non autorisé",
+    FORBIDDEN = "Interdit",
+    INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
+    BAD_REQUEST = "Mauvaise requête",
+}
   
