@@ -11,6 +11,7 @@ import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
+import {InternalServerError} from "../Errors/InternalServerError";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -114,5 +115,6 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+        return;
     }
 };
