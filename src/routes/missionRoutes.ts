@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { auth } from "../Middleware/authMiddleware";
 import upload from "../services/UploadService";
 import { createMission } from "../controllers/MissionController";
+import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
 
