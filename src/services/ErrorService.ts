@@ -24,5 +24,5 @@ export const handleHttpError = (error: unknown, res: Response): void => {
         return;
     }
 
-    res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR }); // Gestion des erreurs inconnues
+    res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
 };

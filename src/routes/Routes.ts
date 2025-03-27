@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/AuthController';
 import { auth } from '../Middleware/authMiddleware';
-import { getAccountById } from '../controllers/AccountController';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
 import {
     createMission,
@@ -17,7 +16,7 @@ router.post('/register', register);
 router.post('/login', login);
 
 // [Account]
-router.get('/account/:id', auth, getAccountById);
+//router.get('/account/:id', auth, getAccountById);
 
 // [Mission]
 router.post("/mission", auth, upload, createMission);

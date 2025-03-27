@@ -1,12 +1,13 @@
 import request from 'supertest';
-import sequelize from "../config/sequelize";
-import { resetDatabase } from "../utils/databaseUtils";
-import app from "..";
-import MissionModel from '../models/MissionModel';
-import PictureModel from '../models/PictureModel';
-import { MissionEnum } from '../controllers/enums/MissionEnum';
-import MissionTypeModel from '../models/MissionTypeModel';
-import {generateAuthTokenForTest} from "./Utils/TestProvider";
+import sequelize from "../../config/sequelize";
+import { resetDatabase } from "../../utils/databaseUtils";
+import app from "../../index";
+import MissionModel from '../../models/MissionModel';
+import PictureModel from '../../models/PictureModel';
+import { MissionEnum } from '../../controllers/enums/MissionEnum';
+import MissionTypeModel from '../../models/MissionTypeModel';
+import {generateAuthTokenForTest} from "../Utils/TestProvider";
+import {ErrorEnum} from "../../enums/errorEnum";
 
 let authToken: string;
 let missionId: number;
@@ -16,14 +17,12 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    // Crée un type de mission pour les tests
     const missionType = await MissionTypeModel.create({
         id: 1,
         longLibel: "Test Mission Type",
         shortLibel: "Test"
     });
 
-    // Crée une mission pour les tests
     const mission = await MissionModel.create({
         description: "Test mission description",
         timeBegin: "2025-02-17T10:00:00Z",
@@ -33,7 +32,6 @@ beforeAll(async () => {
 
     missionId = mission.id;
 
-    // Crée une image associée à la mission
     await PictureModel.create({
         name: "test_image.png",
         alt: "test_image.png",
@@ -90,7 +88,7 @@ describe("Récupération d'une mission par ID", () => {
             .set("Authorization", `Bearer ${authToken}`)
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("ID de mission invalide.");
+        expect(response.body.message).toBe(ErrorEnum.ID_INVALID);
     });
 
     test("Test avec une mission existante mais sans photos associées", async () => {
@@ -118,7 +116,6 @@ describe("Récupération d'une mission par ID", () => {
     });
 
     test("Test avec une erreur inattendue (exemple : problème de base de données)", async () => {
-        // Simule une erreur sur `findByPk` en espionnant la méthode Sequelize
         const spy = jest.spyOn(MissionModel, 'findByPk').mockRejectedValue(new Error("Problème interne"));
 
         const response = await request(app)
@@ -128,7 +125,6 @@ describe("Récupération d'une mission par ID", () => {
         expect(response.status).toBe(500);
         expect(response.body.message).toBe(MissionEnum.ERROR_DURING_FETCHING_MISSION);
 
-        // Restaure le comportement normal de `findByPk`
         spy.mockRestore();
     });
 });

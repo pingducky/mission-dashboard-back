@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import AccountModel from '../models/AccountModel';
 import { ErrorEnum } from '../enums/errorEnum';
+import { BadRequestError } from '../Errors/BadRequestError';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 const JWT_EXPIRES_IN = '1h';
@@ -11,7 +12,7 @@ class AuthService {
     const existingUser = await AccountModel.findOne({ where: { email } });
     
     if (existingUser) {
-      throw new Error(ErrorEnum.EMAIL_ALREADY_USED);
+      throw new BadRequestError(ErrorEnum.EMAIL_ALREADY_USED);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,12 +32,12 @@ class AuthService {
   public static async login(email: string, password: string): Promise<string> {
     const account = await AccountModel.findOne({ where: { email } });
     if (!account) {
-      throw new Error(ErrorEnum.ACCOUNT_NOT_FOUND);
+      throw new BadRequestError(ErrorEnum.ACCOUNT_NOT_FOUND);
     }
 
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
-        throw new Error(ErrorEnum.PASSWORD_INVALID);
+        throw new BadRequestError(ErrorEnum.PASSWORD_INVALID);
     }
 
     return AuthService.generateJwt(account);
@@ -52,7 +53,7 @@ class AuthService {
     try {
       return jwt.verify(token, SECRET_KEY);
     } catch (error) {
-      throw new Error(ErrorEnum.INVALID_TOKEN);
+      throw new BadRequestError(ErrorEnum.INVALID_TOKEN);
     }
   }
 }
