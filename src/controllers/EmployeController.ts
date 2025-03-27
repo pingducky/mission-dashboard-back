@@ -29,11 +29,7 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
         await employee.update({ isEnabled: false });
         res.status(204).send();
     } catch (error: unknown) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: ErrorEnum.UNEXPECTED_ERROR });
-        }
+        handleHttpError(error, res);
     }
 };
 

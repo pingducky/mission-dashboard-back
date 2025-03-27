@@ -55,6 +55,5 @@ describe("PUT /employees/:id/disable", () => {
 
         expect(response.status).toBe(400);
         expect(response.body.message).toBe(ErrorEnum.ACCOUNT_NOT_FOUND);
-        expect(response.body).toHaveProperty("message");
     });
 });

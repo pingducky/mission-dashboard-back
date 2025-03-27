@@ -1,10 +1,10 @@
 import request from "supertest";
-import app from "..";
-import { resetDatabase } from "../utils/databaseUtils";
-import { ErrorEnum } from "../enums/errorEnum";
-import sequelize from "../config/sequelize";
-import EmployeRepository from '../repositories/EmployeRepository';
-import { InternalServerError } from "../Errors/InternalServerError";
+import app from "../..";
+import { resetDatabase } from "../../utils/databaseUtils";
+import { ErrorEnum } from "../../enums/errorEnum";
+import sequelize from "../../config/sequelize";
+import EmployeRepository from '../../repositories/EmployeRepository';
+import { InternalServerError } from "../../Errors/InternalServerError";
 let authToken: string;
 
 beforeAll(async () => {
