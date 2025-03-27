@@ -26,7 +26,7 @@ const router = Router();
  *       400:
  *         description: Erreur lors de la récupération des employés.
  */
-router.get('/employees', auth, getAllEmployees);
+router.get('/', auth, getAllEmployees);
 
 /**
  * @swagger
@@ -57,7 +57,7 @@ router.get('/employees', auth, getAllEmployees);
  *       404:
  *         description: Employé non trouvé
  */
-router.get ('/employees/:id', auth, getEmployeeById);
+router.get ('/:id', auth, getEmployeeById);
 
 /**
  * @swagger
@@ -94,6 +94,6 @@ router.get ('/employees/:id', auth, getEmployeeById);
  *       404:
  *         description: Employé non trouvé
  */
-router.patch('/employees/:id', auth, updateEmployee);
+router.patch('/:id', auth, updateEmployee);
 
 module.exports = router;

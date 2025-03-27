@@ -62,6 +62,6 @@ const router = Router();
  *       500:
  *         description: Erreur serveur lors de la création de la mission
  */
-router.post("/mission", auth, upload, createMission);
+router.post("/", auth, upload, createMission);
 
 module.exports = router;

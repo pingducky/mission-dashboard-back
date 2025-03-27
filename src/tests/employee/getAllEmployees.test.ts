@@ -8,7 +8,7 @@ beforeAll(async () => {
     await resetDatabase();
 
     const userResponse = await request(app)
-        .post("/api/register")
+        .post("/api/auth/register")
         .send({
             firstName: "John",
             lastName: "Doe",
@@ -27,7 +27,7 @@ afterAll(async () => {
 describe("Employee API", () => {
     test("Doit récupérer tous les employés", async () => {
         const response = await request(app)
-            .get("/api/employees")
+            .get("/api/employee")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -38,7 +38,7 @@ describe("Employee API", () => {
         await resetDatabase();
 
         const response = await request(app)
-            .get("/api/employees")
+            .get("/api/employee")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -46,7 +46,7 @@ describe("Employee API", () => {
     });
 
     test("Doit empêcher un utilisateur non authentifié d'accéder à la liste des employés", async () => {
-        const response = await request(app).get("/api/employees");
+        const response = await request(app).get("/api/employee");
 
         expect(response.status).toBe(401);
     });
