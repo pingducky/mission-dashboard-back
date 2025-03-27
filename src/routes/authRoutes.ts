@@ -127,7 +127,7 @@ router.post('/login', login);
 
 /**
  * @swagger
- * /login:
+ * /disconnect:
  *   post:
  *     summary: Disconnect a connected user
  *     description: This endpoint allows a user to log out.
