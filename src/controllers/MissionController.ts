@@ -122,7 +122,6 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
 interface CustomRequest extends Request {
     token?: {
         id: number;
-        // autres champs éventuels : email, role, etc.
     };
 }
 
@@ -166,7 +165,6 @@ export const getMyMissions = async (req: CustomRequest, res: Response): Promise<
             missions: account.missions || [],
         });
     } catch (error) {
-        console.error("Erreur getMyMissions:", error);
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
     }
 };
