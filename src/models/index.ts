@@ -12,14 +12,14 @@ import defineAssociations from "./Associations";
 
 const initModels = async () => {
     try {
-        // ✅ 2. Définir les relations APRÈS la synchronisation complète
+        // ✅ 1. Définir les relations APRÈS la synchronisation complète
         console.log('🔗 Configuration des relations...');
 
         defineAssociations();
 
         console.log('🚀 Toutes les relations sont créées avec succès !');
 
-        // ✅ 1. Synchroniser d'abord les modèles indépendants dans le bon ordre
+        // ✅ 2. Synchroniser d'abord les modèles indépendants dans le bon ordre
         await AccountModel.sync({ alter: true });
         console.log('✅ Table Account synchronisée');
 
