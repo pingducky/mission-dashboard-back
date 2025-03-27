@@ -56,10 +56,9 @@ afterAll(async () => {
             .post('/api/mission')
             .send({})
             .set("Authorization", `Bearer ${authToken}`)
-        
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        expect(response.body.error).toBe(ErrorEnum.MISSING_REQUIRED_FIELDS);
     })
 
     test('Test de création de mission sans les champs facultatif', async () => {
@@ -107,7 +106,7 @@ afterAll(async () => {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
 
-        const imagePath = path.resolve(__dirname, 'upload\\input\\test_upload_image.png');
+        const imagePath = path.resolve(__dirname, '.\\..\\upload\\input\\test_upload_image.png');
 
         const requestBuilder = request(app)
         .post('/api/mission')
@@ -130,7 +129,7 @@ afterAll(async () => {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
 
-        const imagePath = path.resolve(__dirname, 'upload\\input\\test_upload_document.docx');
+        const imagePath = path.resolve(__dirname, '.\\..\\upload\\input\\test_upload_document.docx');
         const requestBuilder = request(app)
         .post('/api/mission')
         .field("description", "Good description")
@@ -157,7 +156,7 @@ afterAll(async () => {
         })
         .set("Authorization", `Bearer ${authToken}`)
         expect(response.status).toBe(404);
-        expect(response.body.message).toEqual(MissionEnum.USER_NOT_FOUND)
+        expect(response.body.error).toEqual(MissionEnum.USER_NOT_FOUND)
     })
 
     test('Test de création de mission avec un type de mission inexistant', async () => {
@@ -174,6 +173,6 @@ afterAll(async () => {
         
         expect(response.status).toBe(400);
         
-        expect(response.body.message).toEqual(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
+        expect(response.body.error).toEqual(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
     })
 });

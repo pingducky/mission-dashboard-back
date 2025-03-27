@@ -6,7 +6,7 @@ import { ForbiddenError } from "../Errors/ForbiddenError";
 import { BadRequestError } from "../Errors/BadRequestError";
 
 export const handleHttpError = (error: unknown, res: Response): void => {
-    console.log("error ", error);
+    // console.log("error ", error);
     if (error instanceof NotFoundError) {
         res.status(404).json({ error: error.message });
         return;
@@ -24,5 +24,5 @@ export const handleHttpError = (error: unknown, res: Response): void => {
         return;
     }
 
-    res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR }); // Gestion des erreurs inconnues
+    res.status(500).json({ error: ErrorEnum.UNEXPECTED_ERROR });
 };
