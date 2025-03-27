@@ -21,7 +21,7 @@ afterAll(async () => {
 describe("PUT /employees/:id/disable", () => {
     test("Dois retourner une erreur si l\'utilisateur n'a pas les droits.", async () => {
         const response = await request(app)
-            .put("/api/employees/1/disable")
+            .put("/api/employee/1/disable")
             .set("Authorization", `Bearer ${authToken}`);
         
         expect(response.status).toBe(401);
@@ -32,7 +32,7 @@ describe("PUT /employees/:id/disable", () => {
         await giveAdminRole();
 
         const response = await request(app)
-            .put("/api/employees/1/disable")
+            .put("/api/employee/1/disable")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(204);
@@ -41,7 +41,7 @@ describe("PUT /employees/:id/disable", () => {
     test("Doit demander l'authentification", async () => {
 
         const response = await request(app)
-        .put("/api/employees/1/disable")
+        .put("/api/employee/1/disable")
 
         expect(response.status).toBe(401);
     });
@@ -50,7 +50,7 @@ describe("PUT /employees/:id/disable", () => {
         await giveAdminRole();
 
         const response = await request(app)
-        .put("/api/employees/9999/disable")
+        .put("/api/employee/9999/disable")
         .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(400);

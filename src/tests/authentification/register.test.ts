@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app  from '..';
-import { resetDatabase } from '../utils/databaseUtils';
-import { ErrorEnum } from '../enums/errorEnum';
-import sequelize from '../config/sequelize';
+import { resetDatabase } from '../../utils/databaseUtils';
+import sequelize from '../../config/sequelize';
+import app from '../..';
+import { ErrorEnum } from '../../enums/errorEnum';
 
 beforeEach(async () => {
   await resetDatabase();
@@ -15,7 +15,7 @@ afterAll(async () => {
 describe('Inscription API', () => {
     test('Doit créé un nouveau compte et retourner le token', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -30,7 +30,7 @@ describe('Inscription API', () => {
 
     test('Doit retourner une erreur si un champ requis est manquant', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -45,7 +45,7 @@ describe('Inscription API', () => {
 
     test('Doit retourner une erreur si l\'email est déjà utilisé', async () => {
       await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -55,7 +55,7 @@ describe('Inscription API', () => {
         });
 
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'Jane',
           lastName: 'Smith',
@@ -70,7 +70,7 @@ describe('Inscription API', () => {
     });
     test('Doit retourner une erreur si l\'email est invalide', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
