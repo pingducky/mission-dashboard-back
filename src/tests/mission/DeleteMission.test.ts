@@ -1,13 +1,13 @@
 import request from 'supertest';
-import sequelize from "../config/sequelize";
-import { resetDatabase } from "../utils/databaseUtils";
-import app from "..";
-import { MissionEnum } from '../controllers/enums/MissionEnum';
-import MissionTypeModel from '../models/MissionTypeModel';
-import MissionModel from '../models/MissionModel';
-import PictureModel from '../models/PictureModel';
-import AccountMissionAssignModel from '../models/AccountMissionAssignModel';
-import { generateAuthTokenForTest } from './Utils/TestProvider';
+import sequelize from "../../config/sequelize";
+import { resetDatabase } from "../../utils/databaseUtils";
+import app from "../../index";
+import { MissionEnum } from '../../controllers/enums/MissionEnum';
+import MissionTypeModel from '../../models/MissionTypeModel';
+import MissionModel from '../../models/MissionModel';
+import PictureModel from '../../models/PictureModel';
+import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
+import { generateAuthTokenForTest } from '../Utils/TestProvider';
 import path from 'path';
 import fs from 'fs';
 

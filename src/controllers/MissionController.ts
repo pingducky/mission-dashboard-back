@@ -6,13 +6,12 @@ import { MissionEnum } from "./enums/MissionEnum";
 import AccountMissionAssignModel from "../models/AccountMissionAssignModel";
 import AccountModel from "../models/AccountModel";
 import MissionTypeModel from "../models/MissionTypeModel";
-import {deleteFile, uploadFiles} from "../services/UploadService";
+import { uploadFiles } from "../services/UploadService";
 import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 import fs from "fs";
 import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
-import {InternalServerError} from "../Errors/InternalServerError";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
