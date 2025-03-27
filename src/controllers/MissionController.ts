@@ -12,7 +12,6 @@ import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import MessageModel from "../models/MessageModel";
-import {InternalServerError} from "../Errors/InternalServerError";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -84,7 +83,6 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
     try {
         const { id } = req.params;
 
-        //Conversion en nombre
         const missionId = Number(id);
         if (isNaN(missionId)) {
             res.status(400).json({ message: ErrorEnum.ID_INVALID });
@@ -101,7 +99,7 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
                 },
                 {
                     model: MessageModel,
-                    as: 'missionMessages', // 🔥 Mettre à jour avec le nouvel alias
+                    as: 'missionMessages',
                     attributes: ['id', 'message', 'idAccount', 'idMission'],
                     include: [
                         {
@@ -136,7 +134,6 @@ export const addCommentToMission = async (req: Request, res: Response) => {
     try {
         const { message, idAccount, idMission } = req.body;
 
-        //Vérification des champs obligatoires
         if (!message || !idAccount || !idMission) {
             res.status(400).json({ message: ErrorEnum.MISSING_REQUIRED_FIELDS });
             return;
@@ -145,14 +142,12 @@ export const addCommentToMission = async (req: Request, res: Response) => {
         const account = await AccountModel.findByPk(idAccount);
         if (!account) {
             res.status(404).json({ message: MissionEnum.USER_NOT_FOUND });
-            // res.status(404).json({ message: "Compte introuvable" });
             return;
         }
 
         const mission = await MissionModel.findByPk(idMission);
         if (!mission) {
             res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
-            // res.status(404).json({ message: "Mission introuvable" });
             return;
         }
 
@@ -168,7 +163,6 @@ export const addCommentToMission = async (req: Request, res: Response) => {
         });
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_COMMENT_CREATION, error });
-        // res.status(500).json({ message: "Erreur lors de l'ajout du commentaire", error });
         return;
     }
 };
