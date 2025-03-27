@@ -11,7 +11,7 @@ beforeAll(async () => {
     await resetDatabase();
 
     const userResponse = await request(app)
-        .post("/api/register")
+        .post("/api/auth/register")
         .send({
             firstName: "John",
             lastName: "Doe",
@@ -31,7 +31,7 @@ describe("Employee API", () => {
 
     test("Doit mettre à jour un employé", async () => {
         const response = await request(app)
-            .patch("/api/employees/1")
+            .patch("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`)
             .send({ lastName: "Johnson" });
 
@@ -41,7 +41,7 @@ describe("Employee API", () => {
 
     test("Doit retourner une erreur si les données de mise à jour sont invalides", async () => {
         const response = await request(app)
-            .patch("/api/employees/1")
+            .patch("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`)
             .send({
                 firstName: "",
@@ -54,7 +54,7 @@ describe("Employee API", () => {
 
     test("Doit retourner une erreur si aucune donnée de mise à jour n'est fournie", async () => {
         const response = await request(app)
-            .patch("/api/employees/1")
+            .patch("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`)
             .send({});
 
@@ -64,7 +64,7 @@ describe("Employee API", () => {
 
     test("Doit retourner une erreur si la mise à jour d'un employé échoue", async () => {
         const response = await request(app)
-            .patch("/api/employees/99999")
+            .patch("/api/employee/99999")
             .set("Authorization", `Bearer ${authToken}`)
             .send({ lastName: "Johnson" });
 
@@ -74,7 +74,7 @@ describe("Employee API", () => {
 
     test("Doit empêcher un utilisateur non authentifié de modifier les infos d'un autre utilisateur via l'ID", async () => {
         const response = await request(app)
-            .patch("/api/employees/1")
+            .patch("/api/employee/1")
             .send({ lastName: "Johnson" });
 
         expect(response.status).toBe(401);
