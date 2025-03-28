@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, register } from "../controllers/AuthController";
+import { login, register, disconnect } from "../controllers/AuthController";
 
 const router = Router();
 
@@ -124,5 +124,28 @@ router.post('/register', register);
  *               example: "Unexpected error."
  */
 router.post('/login', login);
+
+/**
+ * @swagger
+ * /disconnect:
+ *   post:
+ *     summary: Disconnect a connected user
+ *     description: This endpoint allows a user to log out.
+ *     tags:
+ *       - Authentification
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *       500:
+ *         description: Unexpected error during logout.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *               description: Error message.
+ *               example: "Unexpected error."
+ */
+router.post('/disconnect', disconnect)
 
 module.exports = router;

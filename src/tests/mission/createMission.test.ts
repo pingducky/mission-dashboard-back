@@ -7,7 +7,7 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import path from 'path';
 import fs from 'fs';
-import { generateAuthTokenForTest } from '../utils/TestProvider';
+import { generateAuthTokenForTest } from '../Utils/TestProvider';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
 import MissionModel from '../../models/MissionModel';
 import PictureModel from '../../models/PictureModel';
