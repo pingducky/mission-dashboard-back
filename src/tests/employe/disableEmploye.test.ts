@@ -3,7 +3,7 @@ import app from "../..";
 import { resetDatabase } from "../../utils/databaseUtils";
 import { ErrorEnum } from "../../enums/errorEnum";
 import sequelize from "../../config/sequelize";
-import { generateAuthTokenForTest, initRoles, giveAdminRole } from "../Utils/TestProvider";
+import { generateAuthTokenForTest, giveAdminRole, initRoles } from "../utils/TestProvider";
 
 let authToken: string;
 
@@ -18,7 +18,7 @@ afterAll(async () => {
     await sequelize.close();
 });
 
-describe("PUT /employees/:id/disable", () => {
+describe("PUT /employee/:id/disable", () => {
     test("Dois retourner une erreur si l\'utilisateur n'a pas les droits.", async () => {
         const response = await request(app)
             .put("/api/employee/1/disable")

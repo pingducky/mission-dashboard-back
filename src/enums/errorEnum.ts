@@ -18,5 +18,6 @@ export enum ErrorEnum {
     FORBIDDEN = "Interdit",
     INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
     BAD_REQUEST = "Mauvaise requête",
+    ROLE_NOT_FOUND  = "Rôle non trouvé"
 }
   

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { disableEmployee, getAllEmployees, getEmployeeById, updateEmployee } from "../controllers/EmployeController";
 import { auth } from "../middleware/authMiddleware";
+import { updateEmployeRole } from "../controllers/RoleController";
 
 const router = Router();
 
@@ -97,5 +98,7 @@ router.get ('/:id', auth, getEmployeeById);
 router.patch('/:id', auth, updateEmployee);
 
 router.put('/:id/disable', auth, disableEmployee)
+
+router.patch("/:id/role", auth, updateEmployeRole);
 
 module.exports = router;

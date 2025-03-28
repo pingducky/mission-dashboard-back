@@ -70,7 +70,9 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
 export const updateEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+
         const updateData = req.body;
+
         
         const numericId = Number(id);
         if (isNaN(numericId)) {
@@ -84,7 +86,6 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
         if (updateData.email && !isValidEmail(updateData.email)) {
             throw new BadRequestError(ErrorEnum.UPDATE_EMPTY);
         }
-
         const updatedEmployee = await EmployeRepository.update(numericId, updateData);
 
         if (!updatedEmployee) {
