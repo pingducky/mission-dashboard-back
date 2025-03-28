@@ -1,14 +1,7 @@
-// describe('Login API', () => {
+describe('Login API', () => {
+    test.skip("Doit se déconnecter", () => {});
 
-    // test("Doit se déconnecter", () => {
+    test.skip("Doit générer une erreur, token manquant", () => {});
 
-    // })
-
-    // test("Doit générer une erreur, token manquant", () => {
-        
-    // })
-
-    // test("Doit générer une erreur, token non trouvé", () => {
-        
-    // })
-// });
+    test.skip("Doit générer une erreur, token non trouvé", () => {});
+});
