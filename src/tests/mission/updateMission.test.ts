@@ -1,47 +1,19 @@
-import request from 'supertest';
-import sequelize from "../../config/sequelize";
-import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
-import { ErrorEnum } from '../../enums/errorEnum';
-import MissionTypeModel from '../../models/MissionTypeModel';
-import { MissionEnum } from '../../controllers/enums/MissionEnum';
-import { generateAuthTokenForTest } from '../Utils/TestProvider';
-let authToken: string;
+// describe('PUT /mission/:id', () => {
+//     test("Doit modifier une mission", async () => {
+//     });
 
+//     test("Doit retourner une erreur, la mission n'existe pas", async () => {
+//     });
 
-beforeEach(async () => {
-    await resetDatabase();
+//     test("Doit retourner une erreur, le type de mission n'existe pas", async () => {
+//     });
 
-    authToken = await generateAuthTokenForTest();
+//     test("Doit retourner une erreur, champs manquants", async () => {
+//     });
 
-    // Création d'un type de modèle
-    await MissionTypeModel.create({
-        id: 1,
-        longLibel: "Test Mission Type",
-        shortLibel: "Test"
-    });
-});
+//     test("Doit retourner une erreur, l'image n'existe pas", async () => {
+//     });
 
-afterAll(async () => {
-    await sequelize.close();
-});
-  
-describe('PUT /mission/:id', () => {
-    test("Doit modifier une mission", async () => {
-    });
-
-    test("Doit retourner une erreur, la mission n'existe pas", async () => {
-    });
-
-    test("Doit retourner une erreur, le type de mission n'existe pas", async () => {
-    });
-
-    test("Doit retourner une erreur, champs manquants", async () => {
-    });
-
-    test("Doit retourner une erreur, date invalide", async () => {
-    });
-
-    test("Doit retourner une erreur, authentification requise", async () => {
-    });
-});
+//     test("Doit retourner une erreur, authentification requise", async () => {
+//     });
+// });
