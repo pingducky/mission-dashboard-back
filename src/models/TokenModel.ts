@@ -6,6 +6,7 @@ class TokenModel extends Model {
     public id!: number;
     public token!: string;
     public isValid!: boolean;
+    public idAccount!: number;
 }
 
 TokenModel.init(

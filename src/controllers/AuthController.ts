@@ -10,7 +10,7 @@ import { AuthEnum } from './enums/AuthEnum';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { firstName, lastName, email, password, phoneNumber } = req.body;
+    const { firstName, lastName, email, password, phoneNumber, address, city, country, postalCode} = req.body;
 
     if (!firstName || !lastName || !email || !password || !phoneNumber) {
       throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
@@ -18,7 +18,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     validateEmail(email);
 
-    const token = await AuthService.register(firstName, lastName, email, password, phoneNumber);
+    
+    const token = await AuthService.register({
+      firstName,
+      lastName,
+      email,
+      password,
+      phoneNumber,
+      address,
+      city,
+      country,
+      postalCode,
+    });
+
     const { id } = await AccountModel.findOne({ where: { email }, attributes: ['id'] }) || {};
 
     if(!id) {

@@ -5,28 +5,26 @@ import AccountRoleModel from "../../models/AccountRoleModel";
 import PermissionModel from "../../models/PermissionModel";
 import PermissionRoleModel from "../../models/PermissionRoleModel";
 import RoleModel from "../../models/RoleModel";
-import AuthService from "../../services/AuthService";
+import AuthService, { RegisterParams } from "../../services/AuthService";
 
 // Fonction pour générer un token pour les tests
 export const generateAuthTokenForTest = async (): Promise<string> => {
     await AccountModel.destroy({ where: {}, force: true });
 
-    const fakeUser = {
+    const fakeUser: RegisterParams = {
         firstName: "John",
         lastName: "Doe",
         email: "john.doe@example.com",
         password: "password123",
         phoneNumber: "1234567890",
+        address: "123 Main St",
+        city: "Test City",
+        country: "Test Country",
+        postalCode: "12345",
     };
 
     // Appeler le service d'authentification pour créer un utilisateur
-    const token = await AuthService.register(
-        fakeUser.firstName,
-        fakeUser.lastName,
-        fakeUser.email,
-        fakeUser.password,
-        fakeUser.phoneNumber
-    );
+    const token = await AuthService.register(fakeUser);
 
     return token;
 };

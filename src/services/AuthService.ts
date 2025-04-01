@@ -7,14 +7,29 @@ import { BadRequestError } from '../Errors/BadRequestError';
 const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 const JWT_EXPIRES_IN = '1h';
 
+export type RegisterParams = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+};
+
+
 class AuthService {
-  public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
+  public static async register(params: RegisterParams): Promise<string> {
+    const { firstName, lastName, email, password, phoneNumber, address, city, country, postalCode } = params;
+  
     const existingUser = await AccountModel.findOne({ where: { email } });
     
     if (existingUser) {
       throw new BadRequestError(ErrorEnum.EMAIL_ALREADY_USED);
     }
-
+  
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const newAccount = await AccountModel.create({
@@ -23,7 +38,11 @@ class AuthService {
       email,
       password: hashedPassword,
       isEnabled: true,
-      phoneNumber: phoneNumber,
+      phoneNumber,
+      address,
+      city,
+      country,
+      postalCode,
     });
     
     return AuthService.generateJwt(newAccount);

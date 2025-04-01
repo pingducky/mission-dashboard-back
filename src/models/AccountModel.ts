@@ -9,6 +9,9 @@ class AccountModel extends Model {
     public phoneNumber!: string;
     public email!: string;
     public address!: string;
+    public postalCode!: string;
+    public city!: string;
+    public country!: string
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
@@ -48,6 +51,18 @@ AccountModel.init(
         address: {
             type: DataTypes.STRING,
             allowNull: true,
+        },
+        postalCode: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        city: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        country: {
+            type: DataTypes.STRING,
+            allowNull: true
         },
         notificationMail: {
             type: DataTypes.BOOLEAN,
