@@ -1,7 +1,10 @@
-import { DataTypes, Model } from "sequelize";
+import {DataTypes, Model} from "sequelize";
 import sequelize from "../config/sequelize";
 import MissionTypeModel from "./MissionTypeModel";
 import PictureModel from "./PictureModel";
+import AccountModel from "./AccountModel";
+import AccountMissionAssignModel from "./AccountMissionAssignModel";
+import MessageModel from "./MessageModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -11,8 +14,33 @@ class MissionModel extends Model {
     public estimatedEnd?: Date;
     public address!: string;
     public idMissionType!: number;
-
     public pictures?: PictureModel[];
+
+    static associate(models: any) {
+        MissionModel.belongsTo(MissionTypeModel, {
+            foreignKey: 'idMissionType',
+            as: 'missionType'
+        });
+
+        MissionModel.hasMany(PictureModel, {
+            foreignKey: 'idMission',
+            as: 'pictures',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        });
+
+        MissionModel.belongsToMany(AccountModel, {
+            through: AccountMissionAssignModel,
+            foreignKey: 'idMission',
+            otherKey: 'idAccount',
+            as: 'assignedAccounts'
+        });
+
+        MissionModel.hasMany(MessageModel, {
+            foreignKey: 'idMission',
+            as: 'messages'
+        });
+    }
 }
 
 MissionModel.init(
@@ -46,7 +74,7 @@ MissionModel.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: MissionTypeModel,
+                model: 'mission_type',
                 key: 'id',
             },
         },

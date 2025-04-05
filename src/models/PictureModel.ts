@@ -1,5 +1,7 @@
-import { DataTypes, Model } from "sequelize";
+import {DataTypes, Model} from "sequelize";
 import sequelize from '../config/sequelize';
+import MissionModel from "./MissionModel";
+import MessageModel from "./MessageModel";
 
 class PictureModel extends Model {
     public id!: number;
@@ -8,6 +10,20 @@ class PictureModel extends Model {
     public path!: string;
     public idMessage?: number | null;
     public idMission?: number | null;
+
+    static associate(models: any) {
+        PictureModel.belongsTo(MissionModel, {
+            foreignKey: 'idMission',
+            as: 'linkedMission'
+        });
+
+        PictureModel.belongsTo(MessageModel, {
+            foreignKey: 'idMessage',
+            as: 'message',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        });
+    }
 }
 
 PictureModel.init(

@@ -1,10 +1,10 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
-import { resetDatabase } from "../../utils/databaseUtils";
+import {resetDatabase} from "../../utils/databaseUtils";
 import app from "../../index";
 import MissionModel from '../../models/MissionModel';
 import PictureModel from '../../models/PictureModel';
-import { MissionEnum } from '../../controllers/enums/MissionEnum';
+import {MissionEnum} from '../../controllers/enums/MissionEnum';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import {generateAuthTokenForTest} from "../Utils/TestProvider";
 import {ErrorEnum} from "../../enums/errorEnum";
@@ -18,7 +18,6 @@ beforeAll(async () => {
     authToken = await generateAuthTokenForTest();
 
     const missionType = await MissionTypeModel.create({
-        id: 1,
         longLibel: "Test Mission Type",
         shortLibel: "Test"
     });

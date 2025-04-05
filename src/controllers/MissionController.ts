@@ -1,21 +1,19 @@
-import { Request, Response } from "express";
-import MissionModel from "../models/MissionModel";
-import PictureModel from "../models/PictureModel";
-import { ErrorEnum } from "../enums/errorEnum";
-import { MissionEnum } from "./enums/MissionEnum";
-import AccountMissionAssignModel from "../models/AccountMissionAssignModel";
-import AccountModel from "../models/AccountModel";
-import MissionTypeModel from "../models/MissionTypeModel";
-import { uploadFiles } from "../services/UploadService";
-import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
-import { handleHttpError } from "../services/ErrorService";
-import { BadRequestError } from "../Errors/BadRequestError";
-import { NotFoundError } from "../Errors/NotFoundError";
-import {InternalServerError} from "../Errors/InternalServerError";
+import {Request, Response} from "express";
+import {ErrorEnum} from "../enums/errorEnum";
+import {MissionEnum} from "./enums/MissionEnum";
+import {uploadFiles} from "../services/UploadService";
+import {IMAGES_MIME_TYPE} from "../services/enums/MimeTypeEnum";
+import {handleHttpError} from "../services/ErrorService";
+import {BadRequestError} from "../Errors/BadRequestError";
+import {NotFoundError} from "../Errors/NotFoundError";
+import models from '../models';
+
+const {MissionModel, PictureModel, AccountModel, MissionTypeModel, AccountMissionAssignModel} = models;
+
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { description, timeBegin, estimatedEnd, address, timeEnd, missionTypeId, accountAssignId } = req.body;
+        const {description, timeBegin, estimatedEnd, address, timeEnd, missionTypeId, accountAssignId} = req.body;
         let accepedUploadedFiles: string[] = [];
         let rejectedUploadFiles: string[] = [];
 
@@ -55,7 +53,10 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
 
         // Upload des fichiers et enregistrement des images associées
         if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-            const { filesUploaded, rejectedFiles } = await uploadFiles(req.files as Express.Multer.File[], Object.values(IMAGES_MIME_TYPE));
+            const {
+                filesUploaded,
+                rejectedFiles
+            } = await uploadFiles(req.files as Express.Multer.File[], Object.values(IMAGES_MIME_TYPE));
             rejectedUploadFiles = rejectedFiles;
             accepedUploadedFiles = filesUploaded;
             const pictureRecords = filesUploaded.map(filePath => ({
@@ -70,7 +71,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         // Réponse avec ou sans avertissement
         res.status(201).json({
             message: MissionEnum.MISSION_SUCCESSFULLY_CREATED,
-            mission: { ...newMission.toJSON() }, 
+            mission: {...newMission.toJSON()},
             rejectedUploadFiles,
             accepedUploadedFiles,
         });
@@ -81,12 +82,12 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
 
 export const getMissionById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const {id} = req.params;
 
         //Conversion en nombre
         const missionId = Number(id);
         if (isNaN(missionId)) {
-            res.status(400).json({ message: ErrorEnum.ID_INVALID });
+            res.status(400).json({message: ErrorEnum.ID_INVALID});
             return;
         }
 
@@ -102,7 +103,7 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
         });
 
         if (!mission) {
-            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            res.status(404).json({message: MissionEnum.MISSION_NOT_FOUND});
             return;
         }
 
@@ -114,7 +115,7 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
         });
 
     } catch (error) {
-        res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+        res.status(500).json({message: MissionEnum.ERROR_DURING_FETCHING_MISSION});
         return;
     }
 };

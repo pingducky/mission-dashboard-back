@@ -1,4 +1,4 @@
-import { DataTypes, Model } from "sequelize";
+import {DataTypes, Model} from "sequelize";
 import sequelize from "../config/sequelize";
 import AccountModel from "./AccountModel";
 import MissionModel from "./MissionModel";
@@ -13,12 +13,12 @@ AccountMissionAssignModel.init(
         idAccount: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: AccountModel, key: 'id', }
+            references: {model: 'account', key: 'id',}
         },
         idMission: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: MissionModel, key: 'id', }
+            references: {model: "mission_type", key: 'id',}
         },
     },
     {

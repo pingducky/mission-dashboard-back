@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import {Model, DataTypes} from 'sequelize';
 import sequelize from '../config/sequelize';
 import AccountModel from './AccountModel';
 import RoleModel from './RoleModel';
@@ -6,6 +6,18 @@ import RoleModel from './RoleModel';
 class AccountRoleModel extends Model {
     public accountId!: number;
     public roleId!: number;
+
+    static associate(models: any) {
+        AccountModel.belongsToMany(RoleModel, {
+            through: 'role',
+            foreignKey: 'accountId'
+        });
+
+        RoleModel.belongsToMany(AccountModel, {
+            through: 'role',
+            foreignKey: 'roleId'
+        });
+    }
 }
 
 AccountRoleModel.init(
@@ -13,14 +25,14 @@ AccountRoleModel.init(
         IdAccount: {
             type: DataTypes.INTEGER,
             references: {
-                model: AccountModel,
+                model: 'role',
                 key: 'id',
             },
         },
         IdRole: {
             type: DataTypes.INTEGER,
             references: {
-                model: RoleModel,
+                model: 'role',
                 key: 'id',
             },
         },
@@ -31,8 +43,5 @@ AccountRoleModel.init(
         timestamps: false,
     }
 )
-
-AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'accountId' });
-RoleModel.belongsToMany(AccountModel, { through: AccountRoleModel, foreignKey: 'roleId' });
 
 export default AccountRoleModel;

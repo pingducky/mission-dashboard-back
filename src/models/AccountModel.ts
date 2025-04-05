@@ -1,5 +1,10 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import {Model, DataTypes} from 'sequelize';
 import sequelize from "../config/sequelize";
+import MissionModel from "./MissionModel";
+import AccountMissionAssignModel from "./AccountMissionAssignModel";
+import RoleModel from "./RoleModel";
+import AccountRoleModel from "./AccountRoleModel";
+import MessageModel from "./MessageModel";
 
 class AccountModel extends Model {
     public id!: number;
@@ -12,6 +17,25 @@ class AccountModel extends Model {
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
+
+    static associate(models: any) {
+        AccountModel.belongsToMany(MissionModel, {
+            through: AccountMissionAssignModel,
+            foreignKey: 'idAccount',
+            otherKey: 'idMission',
+            as: 'missions'
+        });
+
+        AccountModel.belongsToMany(RoleModel, {
+            through: AccountRoleModel,
+            foreignKey: 'accountId'
+        });
+
+        AccountModel.hasMany(MessageModel, {
+            foreignKey: 'idAccount',
+            as: 'messages'
+        });
+    }
 }
 
 AccountModel.init(

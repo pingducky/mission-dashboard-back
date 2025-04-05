@@ -1,16 +1,33 @@
-import { DataTypes, Model } from "sequelize";
+import {DataTypes, Model} from "sequelize";
 import sequelize from '../config/sequelize';
 import AccountModel from "./AccountModel";
 import MissionModel from "./MissionModel";
+import PictureModel from "./PictureModel";
 
 class MessageModel extends Model {
     public id!: number;
     public message!: string;
     public idAccount!: number;
     public idMission!: number;
-
     public account?: AccountModel;
     public mission?: MissionModel;
+
+    static associate(models: any) {
+        MessageModel.belongsTo(AccountModel, {
+            foreignKey: 'idAccount',
+            as: 'account'
+        });
+
+        MessageModel.belongsTo(MissionModel, {
+            foreignKey: 'idMission',
+            as: 'mission'
+        });
+
+        MessageModel.hasMany(PictureModel, {
+            foreignKey: 'idMessage',
+            as: 'pictures'
+        });
+    }
 }
 
 MessageModel.init(
@@ -47,18 +64,5 @@ MessageModel.init(
         timestamps: false,
     }
 );
-
-// Vérification pour éviter les erreurs circulaires
-if (AccountModel && MissionModel) {
-    MessageModel.belongsTo(AccountModel, {
-        foreignKey: 'idAccount',
-        as: 'account'
-    });
-
-    MessageModel.belongsTo(MissionModel, {
-        foreignKey: 'idMission',
-        as: 'mission'
-    });
-}
 
 export default MessageModel;

@@ -1,4 +1,4 @@
-import { DataTypes, Model } from "sequelize";
+import {DataTypes, Model} from "sequelize";
 import sequelize from "../config/sequelize";
 import AccountModel from "./AccountModel";
 import MissionModel from "./MissionModel";
@@ -15,13 +15,13 @@ AccountMissionLinked.init(
         idAccount: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: AccountModel, key: 'id', }
+            references: {model: 'account', key: 'id',}
 
         },
         idMission: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: MissionModel, key: 'id', }
+            references: {model: 'mission', key: 'id',}
         },
         idClocking: {
             type: DataTypes.INTEGER,
@@ -29,7 +29,7 @@ AccountMissionLinked.init(
             // Todo : Ajouter la contrainte référence lorsque ClockingModel sera créé.
         },
         spentTime: {
-            type: DataTypes.DECIMAL(5,2),
+            type: DataTypes.DECIMAL(5, 2),
             allowNull: false,
         },
     },
