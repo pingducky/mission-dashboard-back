@@ -12,6 +12,7 @@ import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
+import MessageModel from "../models/MessageModel";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -166,3 +167,40 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
+export const addMessageToMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { message, idAccount } = req.body;
+        const idMission = parseInt(req.params.idMission, 10);
+
+        // Validation des champs
+        if (!message || !idAccount || isNaN(idMission)) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        // Vérifie que la mission existe
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            throw new NotFoundError(MissionEnum.MISSION_NOT_FOUND);
+        }
+
+        // Vérifie que le compte existe
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        // Création du message
+        const newMessage = await MessageModel.create({
+            message,
+            idAccount,
+            idMission,
+        });
+
+        res.status(201).json({
+            id: newMessage.id,
+        });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
