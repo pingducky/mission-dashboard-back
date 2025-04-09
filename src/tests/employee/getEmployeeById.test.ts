@@ -19,6 +19,15 @@ beforeAll(async () => {
         });
 
     authToken = userResponse.body.token;
+
+    const upadateResponse = await request(app)
+        .patch("/api/employees/1")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+            address: "TestAddress",
+            city: "TestCity",
+            postalCode: "49160",
+        });
 });
 
 afterAll(async () => {
@@ -57,5 +66,26 @@ describe("Employee API", () => {
         const response = await request(app).get("/api/employees/1");
 
         expect(response.status).toBe(401);
+    });
+
+    test("Doit retourner toutes les données d'un compte", async () => {
+        const response = await request(app)
+            .get("/api/employees/1")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toHaveProperty("firstName", "John");
+        expect(response.body).toHaveProperty("lastName", "Doe");
+        expect(response.body).toHaveProperty("email", "john.doe@example.com");
+        expect(response.body).toHaveProperty("phoneNumber", "1234567890");
+        expect(response.body).toHaveProperty("address", "TestAddress");
+        expect(response.body).toHaveProperty("city", "TestCity");
+        expect(response.body).toHaveProperty("postalCode", "49160");
+        expect(response.body).toHaveProperty("delay", 0);
+        expect(response.body).toHaveProperty("absence", 0);
+        expect(response.body).toHaveProperty("notificationMail", true);
+        expect(response.body).toHaveProperty("notificationSms", false);
+        expect(response.body).toHaveProperty("isEnabled", true);
     });
 });
