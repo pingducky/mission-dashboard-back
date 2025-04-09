@@ -7,15 +7,15 @@ import {BadRequestError} from '../Errors/BadRequestError';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const {firstName, lastName, email, password, address, city, postalCode, phoneNumber} = req.body;
+        const {firstName, lastName, email, password, phoneNumber} = req.body;
 
-        if (!firstName || !lastName || !email || !password || !address || !city || !postalCode || !phoneNumber) {
+        if (!firstName || !lastName || !email || !password || !phoneNumber) {
             throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
         }
 
         validateEmail(email);
 
-        const token = await AuthService.register(firstName, lastName, email, password, address, city, postalCode, phoneNumber);
+        const token = await AuthService.register(firstName, lastName, email, password, phoneNumber);
         res.status(201).json({token});
     } catch (error) {
         handleHttpError(error, res);
