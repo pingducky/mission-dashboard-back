@@ -16,6 +16,7 @@ export enum ErrorEnum {
     UNAUTHORIZED = "Non autorisé",
     FORBIDDEN = "Interdit",
     INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
-    BAD_REQUEST = "Mauvaise requête"
+    BAD_REQUEST = "Mauvaise requête",
+    ID_INVALID = "ID invalide",
   }
   

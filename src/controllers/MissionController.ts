@@ -77,3 +77,43 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 };
+
+export const getMissionById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+
+        //Conversion en nombre
+        const missionId = Number(id);
+        if (isNaN(missionId)) {
+            res.status(400).json({ message: ErrorEnum.ID_INVALID });
+            return;
+        }
+
+        //Recherche de la mission avec jointure des photos
+        const mission = await MissionModel.findByPk(missionId, {
+            include: [
+                {
+                    model: PictureModel,
+                    as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path']
+                }
+            ]
+        });
+
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        res.status(200).json({
+            mission: {
+                ...mission.toJSON(),
+                pictures: mission.pictures || []
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+        return;
+    }
+};
