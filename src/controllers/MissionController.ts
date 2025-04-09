@@ -11,6 +11,7 @@ import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
+import fs from "fs";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -75,5 +76,43 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         });
     } catch (error) {
         handleHttpError(error, res);
+    }
+};
+
+export const deleteMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+
+        if (!id || isNaN(Number(id))) {
+            res.status(400).json({ message: MissionEnum.INVALID_MISSION_ID });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(id);
+
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        await AccountMissionAssignModel.destroy({
+            where: { idMission: id }
+        });
+
+        const pictures = await PictureModel.findAll({ where: { idMission: id } });
+        for (const picture of pictures) {
+            if (fs.existsSync(picture.path)) {
+                fs.unlinkSync(picture.path);
+            }
+        }
+
+        await PictureModel.destroy({ where: { idMission: id } });
+
+        await mission.destroy({ force: true });
+
+        res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la mission :", error);
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_DELETING_MISSION });
     }
 };
