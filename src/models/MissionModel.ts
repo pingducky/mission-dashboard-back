@@ -62,4 +62,9 @@ MissionModel.hasMany(PictureModel, {
     as: 'pictures'
 });
 
+MissionModel.belongsTo(MissionTypeModel, {
+    foreignKey: 'idMissionType',
+    as: 'missionType' // 👈 tu peux nommer ça comme tu veux
+});
+
 export default MissionModel;

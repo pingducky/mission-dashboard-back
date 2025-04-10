@@ -11,6 +11,7 @@ import { IMAGES_MIME_TYPE } from "../services/enums/MimeTypeEnum";
 import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
+import {Op} from "sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -78,32 +79,131 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
     }
 };
 
-export const getMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+// export const getMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+//     try {
+//         const accountId = parseInt(req.params.id, 10);
+//
+//         if (isNaN(accountId)) {
+//             res.status(400).json({ error: 'ID invalide' });
+//             return;
+//         }
+//
+//         // Vérifie si l'utilisateur existe
+//         const account = await AccountModel.findByPk(accountId);
+//         if (!account) {
+//             throw new NotFoundError("Compte non trouvé");
+//         }
+//
+//         // Recherche de toutes les missions liées à l'utilisateur avec les images et le type de mission
+//         const missions = await MissionModel.findAll({
+//             include: [
+//                 {
+//                     model: AccountModel,
+//                     where: { id: accountId },
+//                     attributes: [], // On ne retourne pas les infos du user ici
+//                     through: { attributes: [] }, // Pas besoin des infos de la table pivot
+//                 },
+//                 {
+//                     model: PictureModel,
+//                     as: 'pictures',
+//                     attributes: ['id', 'name', 'alt', 'path']
+//                 },
+//                 {
+//                     model: MissionTypeModel,
+//                     as: 'missionType',
+//                     attributes: ['id', 'shortLibel', 'longLibel']
+//                 }
+//             ]
+//         });
+//
+//         res.status(200).json({ missions });
+//     } catch (error) {
+//         console.error(error); // ← pour voir l'erreur en console
+//         res.status(500).json({ error: 'Erreur serveur' });
+//     }
+// };
+
+
+/*
+ * Gestion des filtres et du tri dynamique :
+ *
+ * Query params disponibles :
+ * - from=YYYY-MM-DD        → filtre les missions dont la date de début (timeBegin) est après ou égale à cette date
+ * - to=YYYY-MM-DD          → filtre les missions dont la date de début est avant ou égale à cette date
+ * - filterByType=ID        → filtre les missions par ID de type de mission (idMissionType)
+ *
+ * Exemples d'appels :
+ * GET /api/mission/1?from=2025-03-25
+ *   → Missions à partir du 25 mars 2025
+ *
+ * GET /api/mission/1?from=2025-03-25&to=2025-03-30
+ *   → Missions entre le 25 et le 30 mars
+ *
+ * GET /api/mission/1?filterByType=2
+ *    → Récupération des missions du type 2
+ *
+ * GET /api/mission/1?filterByType=2&from=2025-03-25&to=2025-04-01
+ *   → Missions du type 2, entre deux dates
+ */
+export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
+        const { from, to, filterByType } = req.query;
 
         if (isNaN(accountId)) {
-            res.status(400).json({ error: 'Invalid account ID' });
+            res.status(400).json({ error: 'ID invalide' });
             return;
         }
 
-        // Vérifie si le compte existe
         const account = await AccountModel.findByPk(accountId);
         if (!account) {
-            throw new NotFoundError("Compte non trouvé");
+            res.status(404).json({ error: 'Compte non trouvé' });
+            return;
         }
 
-        // Récupération des missions assignées avec les images associées
-        const missions = await account.getMissions({
-            include: [{
-                model: PictureModel,
-                as: 'pictures',
-                required: false
-            }]
+        //Construction dynamique du WHERE
+        const where: any = {};
+
+        if (from) {
+            where.timeBegin = { [Op.gte]: new Date(from as string) };
+        }
+
+        if (to) {
+            where.timeBegin = {
+                ...(where.timeBegin || {}),
+                [Op.lte]: new Date(to as string)
+            };
+        }
+
+        if (filterByType) {
+            where.idMissionType = parseInt(filterByType as string, 10);
+        }
+
+        const missions = await MissionModel.findAll({
+            where,
+            include: [
+                {
+                    model: AccountModel,
+                    where: { id: accountId },
+                    attributes: [],
+                    through: { attributes: [] }
+                },
+                {
+                    model: PictureModel,
+                    as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path']
+                },
+                {
+                    model: MissionTypeModel,
+                    as: 'missionType',
+                    attributes: ['id', 'shortLibel', 'longLibel']
+                }
+            ]
         });
 
         res.status(200).json({ missions });
     } catch (error) {
-        res.status(500).json({ error: error.message || "Erreur interne" });
+        console.error(error);
+        res.status(500).json({ error: 'Erreur serveur' });
     }
 };

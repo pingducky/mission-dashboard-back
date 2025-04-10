@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { register, login } from '../controllers/AuthController';
 import { auth } from '../Middleware/authMiddleware';
 import {getAllEmployees, getEmployeeById, updateEmployee} from '../controllers/EmployeController';
-import { createMission } from '../controllers/MissionController';
+import {createMission, getListMissionsByAccountId} from '../controllers/MissionController';
 import upload from '../services/UploadService';
 
 const router = Router();
@@ -13,6 +13,7 @@ router.post('/login', login);
 
 // [Mission]
 router.post("/mission", auth, upload, createMission);
+router.get('/mission/:id', auth, getListMissionsByAccountId);
 
 // [employés]
 router.get('/employees', auth, getAllEmployees);
