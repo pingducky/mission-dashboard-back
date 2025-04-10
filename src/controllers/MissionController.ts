@@ -77,3 +77,33 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 };
+
+export const getMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+
+        if (isNaN(accountId)) {
+            res.status(400).json({ error: 'Invalid account ID' });
+            return;
+        }
+
+        // Vérifie si le compte existe
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError("Compte non trouvé");
+        }
+
+        // Récupération des missions assignées avec les images associées
+        const missions = await account.getMissions({
+            include: [{
+                model: PictureModel,
+                as: 'pictures',
+                required: false
+            }]
+        });
+
+        res.status(200).json({ missions });
+    } catch (error) {
+        res.status(500).json({ error: error.message || "Erreur interne" });
+    }
+};
