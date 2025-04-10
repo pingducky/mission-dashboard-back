@@ -9,7 +9,6 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { generateAuthTokenForTest } from "../Utils/TestProvider";
 import { ErrorEnum } from "../../enums/errorEnum";
 
-// 👇 Ces variables sont définies globalement
 let authToken: string;
 let missionId: number;
 let missionType: MissionTypeModel;
@@ -19,7 +18,6 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    // ✅ Ne PAS redéclarer avec `const` ici
     missionType = await MissionTypeModel.create({
         longLibel: "Test Mission Type",
         shortLibel: "Test"
@@ -98,7 +96,7 @@ describe("Récupération d'une mission par ID", () => {
             description: "Test mission sans photo",
             timeBegin: "2025-02-17T10:00:00Z",
             address: "Test address",
-            idMissionType: missionType.id, // ✅ Utilisation correcte
+            idMissionType: missionType.id,
         });
 
         const response = await request(app)
