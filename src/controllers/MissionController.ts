@@ -79,51 +79,6 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
     }
 };
 
-// export const getMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         const accountId = parseInt(req.params.id, 10);
-//
-//         if (isNaN(accountId)) {
-//             res.status(400).json({ error: 'ID invalide' });
-//             return;
-//         }
-//
-//         // Vérifie si l'utilisateur existe
-//         const account = await AccountModel.findByPk(accountId);
-//         if (!account) {
-//             throw new NotFoundError("Compte non trouvé");
-//         }
-//
-//         // Recherche de toutes les missions liées à l'utilisateur avec les images et le type de mission
-//         const missions = await MissionModel.findAll({
-//             include: [
-//                 {
-//                     model: AccountModel,
-//                     where: { id: accountId },
-//                     attributes: [], // On ne retourne pas les infos du user ici
-//                     through: { attributes: [] }, // Pas besoin des infos de la table pivot
-//                 },
-//                 {
-//                     model: PictureModel,
-//                     as: 'pictures',
-//                     attributes: ['id', 'name', 'alt', 'path']
-//                 },
-//                 {
-//                     model: MissionTypeModel,
-//                     as: 'missionType',
-//                     attributes: ['id', 'shortLibel', 'longLibel']
-//                 }
-//             ]
-//         });
-//
-//         res.status(200).json({ missions });
-//     } catch (error) {
-//         console.error(error); // ← pour voir l'erreur en console
-//         res.status(500).json({ error: 'Erreur serveur' });
-//     }
-// };
-
-
 /*
  * Gestion des filtres et du tri dynamique :
  *
@@ -151,17 +106,15 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         const { from, to, filterByType } = req.query;
 
         if (isNaN(accountId)) {
-            res.status(400).json({ error: 'ID invalide' });
-            return;
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
         }
 
         const account = await AccountModel.findByPk(accountId);
         if (!account) {
-            res.status(404).json({ error: 'Compte non trouvé' });
-            return;
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
         }
 
-        //Construction dynamique du WHERE
+        // Construction dynamique du WHERE
         const where: any = {};
 
         if (from) {
@@ -203,7 +156,6 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
 
         res.status(200).json({ missions });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        handleHttpError(error, res);
     }
 };
