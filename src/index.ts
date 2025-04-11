@@ -12,16 +12,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const authRoutes = require('./routes/authRoutes');
-const missionRoutes = require('./routes/MissionRoutes')
+const missionRoutes = require('./routes/missionRoutes')
 const employeeRoutes = require('./routes/employeeRoutes');
 const permissionRoutes = require('./routes/permissionRoutes')
 const rolesRoutes = require('./routes/RoleRoutes')
+const fileRoutes = require('./routes/fileRoutes')
 
 app.use('/api/auth', authRoutes);
 app.use('/api/employee', employeeRoutes)
 app.use('/api/mission', missionRoutes)
 app.use('/api/permission', permissionRoutes)
 app.use('/api/role', rolesRoutes)
+app.use('/api/file', fileRoutes)
 
 const port = process.env.NODE_ENV === 'test' ? 0 : 3000;
 
