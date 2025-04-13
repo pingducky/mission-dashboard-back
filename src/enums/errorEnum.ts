@@ -1,5 +1,6 @@
 export enum ErrorEnum {
     MISSING_REQUIRED_FIELDS = 'Certains champs requis sont manquant',
+    INVALID_FIELDS_LENGTH = 'Taille de champs invalide',
     EMAIL_ALREADY_USED = 'Email déjà utilisé',
     INVALID_EMAIL = 'Adresse email invalide',
     ACCOUNT_NOT_FOUND = "Compte non trouvé",
@@ -17,6 +18,7 @@ export enum ErrorEnum {
     FORBIDDEN = "Interdit",
     INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
     BAD_REQUEST = "Mauvaise requête",
+    ROLE_NOT_FOUND  = "Rôle non trouvé",
     INVALID_ID = "ID invalide",
-  }
+}
   

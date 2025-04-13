@@ -15,7 +15,7 @@ afterAll(async () => {
 describe('Inscription API', () => {
     test('Doit créé un nouveau compte et retourner le token', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -30,7 +30,7 @@ describe('Inscription API', () => {
 
     test('Doit retourner une erreur si un champ requis est manquant', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -45,7 +45,7 @@ describe('Inscription API', () => {
 
     test('Doit retourner une erreur si l\'email est déjà utilisé', async () => {
       await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -55,7 +55,7 @@ describe('Inscription API', () => {
         });
 
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'Jane',
           lastName: 'Smith',
@@ -70,7 +70,7 @@ describe('Inscription API', () => {
     });
     test('Doit retourner une erreur si l\'email est invalide', async () => {
       const response = await request(app)
-        .post('/api/register')
+        .post('/api/auth/register')
         .send({
           firstName: 'John',
           lastName: 'Doe',

@@ -7,10 +7,10 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import path from 'path';
 import fs from 'fs';
-import { generateAuthTokenForTest } from '../utils/TestProvider';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
 import MissionModel from '../../models/MissionModel';
 import PictureModel from '../../models/PictureModel';
+import { generateAuthTokenForTest } from '../utils/TestProvider';
 
 let authToken: string;
 

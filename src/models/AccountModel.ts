@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import sequelize from "../config/sequelize";
 
 class AccountModel extends Model {
@@ -22,23 +22,23 @@ AccountModel.init(
             primaryKey: true,
         },
         firstName: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: false,
         },
         lastName: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: false,
         },
         password: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: false,
         },
         phoneNumber: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(15),
             allowNull: true,
         },
         email: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(320),
             allowNull: false,
             unique: true,
             validate: {

@@ -15,7 +15,7 @@ afterAll(async () => {
 describe('Login API', () => {
   test('Doit connecter l\'utilisateur et retourner le token', async () => {
     await request(app)
-      .post('/api/register')
+      .post('/api/auth/register')
       .send({
         firstName: 'John',
         lastName: 'Doe',
@@ -25,7 +25,7 @@ describe('Login API', () => {
       });
 
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/auth/login')
       .send({
         email: 'john.doe@example.com',
         password: 'password123',
@@ -37,7 +37,7 @@ describe('Login API', () => {
 
   test('Doit retourner une erreur si l\'email est incorrect', async () => {
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/auth/login')
       .send({
         email: 'wrong.email@example.com',
         password: 'password123',
@@ -50,7 +50,7 @@ describe('Login API', () => {
 
   test('Doit retourner une erreur si le mot de passe est incorrect', async () => {
     await request(app)
-      .post('/api/register')
+      .post('/api/auth/register')
       .send({
         firstName: 'John',
         lastName: 'Doe',
@@ -60,7 +60,7 @@ describe('Login API', () => {
       });
 
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/auth/login')
       .send({
         email: 'john.doe@example.com',
         password: 'wrongpassword',
@@ -73,7 +73,7 @@ describe('Login API', () => {
 
   test('Doit retourner une erreur si l\'email est manquant', async () => {
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/auth/login')
       .send({
         password: 'password123',
       });
@@ -85,7 +85,7 @@ describe('Login API', () => {
 
   test('Doit retourner une erreur si le mot de passe est manquant', async () => {
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/auth/login')
       .send({
         email: 'john.doe@example.com',
       });
