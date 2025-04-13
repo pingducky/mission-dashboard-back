@@ -9,7 +9,7 @@ beforeAll(async () => {
     await resetDatabase();
 
     const userResponse = await request(app)
-        .post("/api/register")
+        .post("/api/auth/register")
         .send({
             firstName: "John",
             lastName: "Doe",
@@ -28,7 +28,7 @@ afterAll(async () => {
 describe("Employee API", () => {
     test("Doit récupérer un employé par ID", async () => {
         const response = await request(app)
-            .get("/api/employees/1")
+            .get("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -37,7 +37,7 @@ describe("Employee API", () => {
 
     test("Doit retourner une erreur si l'ID est invalide", async () => {
         const response = await request(app)
-            .get("/api/employees/abc")
+            .get("/api/employee/abc")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(400);
@@ -46,7 +46,7 @@ describe("Employee API", () => {
 
     test("Doit retourner une erreur si l'employé n'existe pas", async () => {
         const response = await request(app)
-            .get("/api/employees/99999")
+            .get("/api/employee/99999")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(404);
@@ -54,7 +54,7 @@ describe("Employee API", () => {
     });
 
     test("Doit empêcher un utilisateur non authentifié d'accéder aux infos d'un autre utilisateur via l'ID", async () => {
-        const response = await request(app).get("/api/employees/1");
+        const response = await request(app).get("/api/employee/1");
 
         expect(response.status).toBe(401);
     });
