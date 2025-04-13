@@ -198,6 +198,7 @@ export const addMessageToMission = async (req: Request, res: Response): Promise<
         });
 
         res.status(201).json({
+            message: MissionEnum.MISSION_ADD_COMMENT_SUCCESS,
             id: newMessage.id,
         });
     } catch (error) {
