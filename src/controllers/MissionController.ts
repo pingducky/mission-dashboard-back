@@ -12,6 +12,7 @@ import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
+import MessageModel from "../models/MessageModel";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -182,10 +183,13 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        await AccountMissionAssignModel.destroy({
-            where: { idMission: id }
-        });
+        // Supprime les messages liés à la mission
+        await MessageModel.destroy({ where: { idMission: id } });
 
+        // Supprime les assignations liées
+        await AccountMissionAssignModel.destroy({ where: { idMission: id } });
+
+        // Supprime les fichiers images
         const pictures = await PictureModel.findAll({ where: { idMission: id } });
         for (const picture of pictures) {
             if (fs.existsSync(picture.path)) {
@@ -193,8 +197,10 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
             }
         }
 
+        // Supprime les enregistrements d'images
         await PictureModel.destroy({ where: { idMission: id } });
 
+        // Supprime la mission
         await mission.destroy({ force: true });
 
         res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });
