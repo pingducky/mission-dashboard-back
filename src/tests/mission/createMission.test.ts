@@ -7,10 +7,10 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import path from 'path';
 import fs from 'fs';
-import { generateAuthTokenForTest } from '../Utils/TestProvider';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
 import MissionModel from '../../models/MissionModel';
 import PictureModel from '../../models/PictureModel';
+import { generateAuthTokenForTest } from '../Utils/TestProvider';
 
 let authToken: string;
 
@@ -49,7 +49,7 @@ afterAll(async () => {
         }
     }
 });
-
+  
   describe('Création d\'une mission', () => {
     test('Test des champs obligatoires manquants', async () => {
         const response = await request(app)
@@ -115,12 +115,12 @@ afterAll(async () => {
         .field("address", "Good adresse")
         .field("missionTypeId", 1)
         .set("Authorization", `Bearer ${authToken}`);
-
+    
         await requestBuilder.attach("pictures", imagePath);
 
         const response = await requestBuilder;
         expect(response.status).toBe(201);
-
+        
         expect(fs.existsSync(process.env.FILES_UPLOAD_OUTPUT + path.basename(response.body.accepedUploadedFiles[0]))).toBe(true)
     });
 
@@ -170,9 +170,9 @@ afterAll(async () => {
             missionTypeId: 10,
         })
         .set("Authorization", `Bearer ${authToken}`)
-
+        
         expect(response.status).toBe(400);
-
+        
         expect(response.body.error).toEqual(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
     })
 });
