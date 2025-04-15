@@ -9,6 +9,8 @@ import PermissionModel from '../models/PermissionModel';
 class EmployeRepository {
     static async getAll(filter: 'all' | 'active' | 'inactive' | 'online' = 'all') {
         const where: any = {};
+
+        console.log('Filtre utilisé :', filter);
     
         switch (filter) {
             case 'active':
