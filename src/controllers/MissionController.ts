@@ -167,6 +167,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
 /*
  * Gestion des filtres et du tri dynamique :
  *
