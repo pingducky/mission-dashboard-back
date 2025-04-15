@@ -21,12 +21,15 @@ beforeAll(async () => {
     authToken = userResponse.body.token;
 
     const upadateResponse = await request(app)
-        .patch("/api/employees/1")
+        .patch("/api/employee/1")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
             address: "TestAddress",
             city: "TestCity",
             postalCode: "49160",
+            hiringDate: "2023-10-01",
+            delay: 3,
+            absence: 1
         });
 });
 
@@ -42,6 +45,7 @@ describe("Employee API", () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("id", 1);
+        expect(response.body).not.toHaveProperty("password");
     });
 
     test("Doit retourner une erreur si l'ID est invalide", async () => {
@@ -70,7 +74,7 @@ describe("Employee API", () => {
 
     test("Doit retourner toutes les données d'un compte", async () => {
         const response = await request(app)
-            .get("/api/employees/1")
+            .get("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -82,10 +86,12 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("address", "TestAddress");
         expect(response.body).toHaveProperty("city", "TestCity");
         expect(response.body).toHaveProperty("postalCode", "49160");
-        expect(response.body).toHaveProperty("delay", 0);
-        expect(response.body).toHaveProperty("absence", 0);
+        expect(response.body).toHaveProperty("hiringDate", "2023-10-01T00:00:00.000Z");
+        expect(response.body).toHaveProperty("delay", 3);
+        expect(response.body).toHaveProperty("absence", 1);
         expect(response.body).toHaveProperty("notificationMail", true);
         expect(response.body).toHaveProperty("notificationSms", false);
         expect(response.body).toHaveProperty("isEnabled", true);
+        expect(response.body).not.toHaveProperty("password");
     });
 });
