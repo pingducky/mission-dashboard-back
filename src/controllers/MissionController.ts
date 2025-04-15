@@ -205,7 +205,6 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
 
         res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });
     } catch (error) {
-        console.error("Erreur lors de la suppression de la mission :", error);
-        res.status(500).json({ message: MissionEnum.ERROR_DURING_DELETING_MISSION });
+        handleHttpError(error, res);
     }
 };
