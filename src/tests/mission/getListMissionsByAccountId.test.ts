@@ -25,7 +25,13 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    const account = await AccountModel.create({});
+    const account = await AccountModel.create({
+        firstName: "Test",
+        lastName: "User",
+        email: "test.user@example.com",
+        password: "securepassword"
+    });
+
     accountId = account.id;
 
     await MissionTypeModel.create({
@@ -58,8 +64,8 @@ beforeAll(async () => {
     const missions = await MissionModel.findAll();
     for (const mission of missions) {
         await AccountMissionAssignModel.create({
-            accountId: accountId,
-            missionId: mission.id
+            idAccount: accountId,
+            idMission: mission.id
         });
     }
 });
@@ -159,7 +165,7 @@ describe('GET /api/mission/:id - Liste des missions filtrées', () => {
 
     test('Retourne 200 avec une liste vide si aucun résultat', async () => {
         const response = await request(app)
-            .get(`/api/missio/listMissions/${accountId}?from=2030-01-01`)
+            .get(`/api/mission/listMissions/${accountId}?from=2030-01-01`)
             .set("Authorization", `Bearer ${authToken}`);
 
         const missions = response.body.missions as MissionResponse[];
