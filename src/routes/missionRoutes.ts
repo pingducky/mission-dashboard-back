@@ -66,6 +66,6 @@ router.post("/", auth, upload, createMission);
 
 router.put("/:id", auth, updateMission)
 
-router.get("/:idMission", auth, getMessagesByMissionId)
+router.get("/:idMission/message", auth, getMessagesByMissionId)
 
 module.exports = router;
