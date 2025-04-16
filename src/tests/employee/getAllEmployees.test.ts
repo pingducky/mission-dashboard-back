@@ -3,7 +3,7 @@ import { resetDatabase } from "../../utils/databaseUtils";
 import app from "../..";
 import sequelize from "../../config/sequelize";
 import AccountModel from "../../models/AccountModel";
-import { afterEach } from "node:test";
+import TokenModel from "../../models/TokenModel";
 
 let authToken: string;
 
@@ -38,10 +38,6 @@ const users = [
     }
 ];
 
-afterEach(async() => { // remet a zéro mes account entre chaque test
-    await AccountModel.destroy({ where: {}, truncate: true });
-})
-
 beforeAll(async () => {
     await resetDatabase();
 
@@ -57,73 +53,124 @@ beforeAll(async () => {
 
     authToken = userResponse.body.token;
 
-    try {
-        const insertedUsers = await AccountModel.bulkCreate(users);
-        console.log("Utilisateurs insérés:", insertedUsers);
-    } catch (error) {
-        console.error("Erreur lors de l'insertion des utilisateurs:", error);
-    }
+    await AccountModel.bulkCreate(users);
 });
 
 afterAll(async () => {
-    // await AccountModel.destroy({ where: {} });
-
-    await AccountModel.truncate();
+    await TokenModel.destroy({ where: {} });
+    await AccountModel.destroy({ where: {} });
     await sequelize.close();
 });
 
 describe("Employee API", () => {
-    test("Doit récupérer tous les employés", async () => {
+    test("Doit récupérer tous les employés sans filtre", async () => {
         const response = await request(app)
             .get("/api/employee")
             .set("Authorization", `Bearer ${authToken}`);
-
+    
         expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toEqual([
+            expect.objectContaining({
+                id: 1,
+                email: 'john.doe@example.com'
+            }),
+            expect.objectContaining({
+                id: 2,
+                email: 'jane.smith2@example.com'
+            }),
+            expect.objectContaining({
+                id: 3,
+                email: 'jane.smith3@example.com'
+            }),
+            expect.objectContaining({
+                id: 4,
+                email: 'jane.smith4@example.com'
+            })
+        ]
+        );
     });
-
 
     test("Doit récupérer uniquement les employés actifs", async () => {
         const res = await request(app)
             .get("/api/employee?status=active")
             .set("Authorization", `Bearer ${authToken}`);
     
-        console.log('Réponse API:', res.body);  // Afficher la réponse API pour inspecter les données
-    
-        expect(res.body).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ id: 1, isEnabled: true }),
-                expect.objectContaining({ id: 2, isEnabled: true }),
-                expect.objectContaining({ id: 3, isEnabled: true })
-            ])
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([
+            expect.objectContaining({
+                id: 1,
+                email: 'john.doe@example.com',
+                isEnabled: true
+            }),
+            expect.objectContaining({
+                id: 2,
+                email: 'jane.smith2@example.com',
+                isEnabled: true
+            }),
+            expect.objectContaining({
+                id: 3,
+                email: 'jane.smith3@example.com',
+                isEnabled: true
+            }),
+        ]
         );
     });
 
-    // test("Doit récupérer uniquement les employés inactifs", async () => {
-    //     const res = await request(app)
-    //         .get("/api/employee?status=inactive")
-    //         .set("Authorization", `Bearer ${authToken}`);
-
-    //     expect(res.status).toBe(200);
-    //     res.body.forEach((emp: any) => {
-    //         expect(emp.isEnabled).toBe(false);
-    //     });
-    // });
-
-    // test("Doit récupérer uniquement les employés en ligne", async () => {
-    //     const res = await request(app)
-    //         .get("/api/employee?status=online")
-    //         .set("Authorization", `Bearer ${authToken}`);
-
-    //     expect(res.status).toBe(200);
-    //     res.body.forEach((emp: any) => {
-    //         expect(emp.isOnline).toBe(true);
-    //     });
-    // });
-
-    test("Doit empêcher un utilisateur non authentifié d'accéder à la liste des employés", async () => {
-        const response = await request(app).get("/api/employee");
-
-        expect(response.status).toBe(401);
+    test("Doit récupérer uniquement les employés inactifs", async () => {
+        const res = await request(app)
+            .get("/api/employee?status=inactive")
+            .set("Authorization", `Bearer ${authToken}`);
+        
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([
+            expect.objectContaining({
+                id: 4,
+                email: 'jane.smith4@example.com',
+                isEnabled: false
+            })
+        ]
+        );
     });
+
+    test("Doit récupérer uniquement les employés en ligne", async () => {
+        const res = await request(app)
+            .get("/api/employee?status=online")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([
+            expect.objectContaining({
+                id: 3,
+                email: 'jane.smith3@example.com',
+                isOnline: true
+            })
+        ]);
+    });
+
+    test("Doit récupérer tous les employés avec un filtre invalide", async () => {
+        const res = await request(app)
+            .get("/api/employee?status=invalidFilter")
+            .set("Authorization", `Bearer ${authToken}`);
+    
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([
+            expect.objectContaining({
+                id: 1,
+                email: 'john.doe@example.com'
+            }),
+            expect.objectContaining({
+                id: 2,
+                email: 'jane.smith2@example.com'
+            }),
+            expect.objectContaining({
+                id: 3,
+                email: 'jane.smith3@example.com'
+            }),
+            expect.objectContaining({
+                id: 4,
+                email: 'jane.smith4@example.com'
+            })
+        ]);
+    });
+    
 });
