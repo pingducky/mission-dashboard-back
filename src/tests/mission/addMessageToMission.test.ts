@@ -14,31 +14,37 @@ let authToken: string;
 let createdMissionId: number;
 let createdAccountId: number;
 
+const testMissionType = {
+    id: 1,
+    longLibel: "Test Mission Type",
+    shortLibel: "Test"
+};
+
+const testAccount = {
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'testuser@example.com',
+    password: 'securepassword',
+};
+
+const testMission = {
+    description: 'Mission de test',
+    timeBegin: '2025-05-01T10:00:00Z',
+    address: '123 Test Street',
+    idMissionType: testMissionType.id,
+};
+
 beforeAll(async () => {
     await resetDatabase();
 
     authToken = await generateAuthTokenForTest();
 
-    const missionType = await MissionTypeModel.create({
-        id: 1,
-        longLibel: "Test Mission Type",
-        shortLibel: "Test"
-    });
+    await MissionTypeModel.create(testMissionType);
 
-    const account = await AccountModel.create({
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'testuser@example.com',
-        password: 'securepassword',
-    });
+    const account = await AccountModel.create(testAccount);
     createdAccountId = account.id;
 
-    const mission = await MissionModel.create({
-        description: 'Mission de test',
-        timeBegin: '2025-05-01T10:00:00Z',
-        address: '123 Test Street',
-        idMissionType: missionType.id,
-    });
+    const mission = await MissionModel.create(testMission);
     createdMissionId = mission.id;
 });
 
@@ -97,9 +103,11 @@ describe('addMessageToMission', () => {
         expect(typeof response.body.id).toBe("number");
 
         const createdMessage = await MessageModel.findByPk(response.body.id);
-        expect(createdMessage).not.toBeNull();
-        expect(createdMessage?.message).toBe("Message de test");
-        expect(createdMessage?.idMission).toBe(createdMissionId);
-        expect(createdMessage?.idAccount).toBe(createdAccountId);
+
+        expect(createdMessage?.toJSON()).toEqual(expect.objectContaining({
+            message: "Message de test",
+            idMission: createdMissionId,
+            idAccount: createdAccountId
+        }));
     });
 });
