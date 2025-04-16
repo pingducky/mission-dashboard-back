@@ -2,8 +2,16 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { Secret } from 'jsonwebtoken';
 import { setupSwagger } from '../swagger';
+import cors from 'cors';
+
 
 const app = express();
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+}));
+
 setupSwagger(app);
 
 export const SECRET_KEY: Secret = process.env.SECRET_KEY || "";
