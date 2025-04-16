@@ -45,4 +45,14 @@ MessageModel.init(
     }
 );
 
+MessageModel.belongsTo(AccountModel, {
+    foreignKey: "idAccount",
+    as: "author",
+});
+
+MessageModel.belongsTo(MissionModel, {
+    foreignKey: "idMission",
+    as: "mission",
+});
+
 export default MessageModel;
