@@ -61,6 +61,10 @@ AccountModel.init(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        isOnline: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
     },
     {
         sequelize,
