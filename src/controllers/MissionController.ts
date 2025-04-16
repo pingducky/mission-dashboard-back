@@ -189,7 +189,7 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
         // Supprime les assignations liées
         await AccountMissionAssignModel.destroy({ where: { idMission: id } });
 
-        // Supprime les fichiers images
+        // Supprime les images sur le disque
         const pictures = await PictureModel.findAll({ where: { idMission: id } });
         for (const picture of pictures) {
             if (fs.existsSync(picture.path)) {
@@ -197,10 +197,9 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
             }
         }
 
-        // Supprime les enregistrements d'images
+        // Supprime les enregistrements d'images en BDD
         await PictureModel.destroy({ where: { idMission: id } });
 
-        // Supprime la mission
         await mission.destroy({ force: true });
 
         res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });

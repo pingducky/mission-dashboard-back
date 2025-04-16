@@ -8,6 +8,8 @@ import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import { generateAuthTokenForTest } from '../Utils/TestProvider';
 import MissionModel from '../../models/MissionModel';
+import MessageModel from '../../models/MessageModel';
+import PictureModel from '../../models/PictureModel';
 
 let authToken: string;
 let missionIdToDelete: number;
@@ -17,14 +19,12 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    // Créer un type de mission requis
     await MissionTypeModel.create({
         id: 1,
         longLibel: 'Test Long Libel',
         shortLibel: 'Test'
     });
 
-    // Créer une mission pour test
     const response = await request(app)
         .post('/api/mission')
         .send({
@@ -61,7 +61,6 @@ describe('Suppression de mission', () => {
         expect(response.status).toBe(200);
         expect(response.body.message).toBe(MissionEnum.MISSION_SUCCESSFULLY_DELETED);
 
-        // Vérifier qu'elle est bien supprimée
         const verify = await MissionModel.findByPk(missionIdToDelete);
         expect(verify).toBeNull();
     });
@@ -89,5 +88,56 @@ describe('Suppression de mission', () => {
             .delete(`/api/mission/${missionIdToDelete}`);
 
         expect(response.status).toBe(401);
+    });
+
+    test('Doit supprimer une mission avec image et commentaire en utilisant l\'upload réel', async () => {
+        if (!process.env.FILES_UPLOAD_OUTPUT) {
+            throw new Error('FILES_UPLOAD_OUTPUT doit être défini pour les tests d\'upload.');
+        }
+
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_image.png');
+
+        // Crée la mission
+        const requestBuilder = request(app)
+            .post('/api/mission')
+            .field("description", "Mission à supprimer")
+            .field("timeBegin", "2025-02-17T10:00:00Z")
+            .field("address", "Adresse complète")
+            .field("missionTypeId", 1)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        await requestBuilder.attach("pictures", imagePath);
+        const response = await requestBuilder;
+
+        const missionId = response.body.mission.id;
+        const uploadedFileName = path.basename(response.body.accepedUploadedFiles[0]);
+        const uploadedFilePath = path.join(process.env.FILES_UPLOAD_OUTPUT, uploadedFileName);
+
+        // Ajoute un commentaire à la mission
+        await MessageModel.create({
+            idMission: missionId,
+            idAccount: 1,
+            message: 'Commentaire test'
+        });
+
+        expect(fs.existsSync(uploadedFilePath)).toBe(true);
+
+        // Supprime la mission
+        const deleteRes = await request(app)
+            .delete(`/api/mission/${missionId}`)
+            .set('Authorization', `Bearer ${authToken}`);
+
+        expect(deleteRes.status).toBe(200);
+        expect(deleteRes.body.message).toBe(MissionEnum.MISSION_SUCCESSFULLY_DELETED);
+
+        // Vérifie que tout a été supprimé
+        const missionAfter = await MissionModel.findByPk(missionId);
+        const msgAfter = await MessageModel.findAll({ where: { idMission: missionId } });
+        const picAfter = await PictureModel.findAll({ where: { idMission: missionId } });
+
+        expect(missionAfter).toBeNull();
+        expect(msgAfter.length).toBe(0);
+        expect(picAfter.length).toBe(0);
+        expect(fs.existsSync(uploadedFilePath)).toBe(false);
     });
 });
