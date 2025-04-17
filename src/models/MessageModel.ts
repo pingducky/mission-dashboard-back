@@ -41,8 +41,18 @@ MessageModel.init(
     {
         sequelize,
         tableName: 'message',
-        timestamps: false,
+        timestamps: true,
     }
 );
+
+MessageModel.belongsTo(AccountModel, {
+    foreignKey: "idAccount",
+    as: "author",
+});
+
+MessageModel.belongsTo(MissionModel, {
+    foreignKey: "idMission",
+    as: "mission",
+});
 
 export default MessageModel;

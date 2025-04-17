@@ -7,8 +7,29 @@ import PermissionRoleModel from '../models/PermissionRoleModel';
 import PermissionModel from '../models/PermissionModel';
 
 class EmployeRepository {
-    static async getAll() {
-        return await AccountModel.findAll();
+    static async getAll(filter: 'all' | 'active' | 'inactive' | 'online' = 'all') {
+        const where: any = {};
+
+        console.log('Filtre utilisé :', filter);
+    
+        switch (filter) {
+            case 'active':
+                where.isEnabled = true;
+                break;
+            case 'inactive':
+                where.isEnabled = false;
+                break;
+            case 'online':
+                where.isEnabled = true;
+                where.isOnline = true;
+                break;
+            case 'all':
+            default:
+                // pas de filtre, on renvoie tout
+                break;
+        }
+    
+        return await AccountModel.findAll({ where });
     }
 
     static async getById(id: number) {
