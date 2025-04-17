@@ -12,6 +12,7 @@ import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
+import MessageModel from "../models/MessageModel";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -166,3 +167,37 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
+export const getMessagesByMissionId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const idMission = parseInt(req.params.idMission, 10);
+
+        //Vérification de l'ID
+        if (isNaN(idMission)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        //Vérifie que la mission existe
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            throw new NotFoundError(MissionEnum.MISSION_NOT_FOUND);
+        }
+
+        //Récupère tous les messages associés à cette mission
+        const messages = await MessageModel.findAll({
+            where: { idMission },
+            include: [
+                {
+                    model: AccountModel,
+                    as: "author",
+                    attributes: ["id", "firstName", "lastName", "email"]
+                }
+            ],
+            order: [["createdAt", "DESC"]]
+        });
+
+        res.status(200).json({ messages });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};

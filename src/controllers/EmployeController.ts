@@ -37,7 +37,8 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
 
 export const getAllEmployees = async (req: Request, res: Response): Promise<void> => {
     try {
-        const employees = await EmployeRepository.getAll();
+        const filter = req.query.status as 'all' | 'active' | 'inactive' | 'online' | undefined;
+        const employees = await EmployeRepository.getAll(filter);
 
         const safeEmployees = employees.map(employee => {
             const { password, ...safeData } = employee.get({ plain: true });
