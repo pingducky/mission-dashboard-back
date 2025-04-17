@@ -88,7 +88,7 @@ describe("Récupération d'une mission par ID", () => {
             .set("Authorization", `Bearer ${authToken}`)
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe(ErrorEnum.ID_INVALID);
+        expect(response.body.message).toBe(ErrorEnum.INVALID_ID);
     });
 
     test("Test avec une mission existante mais sans photos associées", async () => {

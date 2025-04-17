@@ -174,7 +174,7 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
         //Conversion en nombre
         const missionId = Number(id);
         if (isNaN(missionId)) {
-            res.status(400).json({ message: ErrorEnum.ID_INVALID });
+            res.status(400).json({ message: ErrorEnum.INVALID_ID });
             return;
         }
 
