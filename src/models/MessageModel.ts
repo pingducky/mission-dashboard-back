@@ -1,7 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from '../config/sequelize';
 import AccountModel from "./AccountModel";
-import MissionModel from "./MissionModel";
 
 class MessageModel extends Model {
     public id!: number;
@@ -33,7 +32,7 @@ MessageModel.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: MissionModel,
+                model: "mission",
                 key: 'id',
             },
         },
@@ -50,9 +49,20 @@ MessageModel.belongsTo(AccountModel, {
     as: "author",
 });
 
-MessageModel.belongsTo(MissionModel, {
-    foreignKey: "idMission",
-    as: "mission",
-});
+
+const MissionModel = require("./MissionModel").default;
+
+// Sécurité : ne fait l’association que si le modèle est bien chargé
+if (MissionModel && MissionModel.prototype instanceof Model) {
+    setImmediate(() => {
+        MessageModel.belongsTo(MissionModel, {
+            foreignKey: "idMission",
+            as: "mission",
+        });
+    });
+} else {
+    console.warn("[WARN] MissionModel not ready — skipping MessageModel.belongsTo(MissionModel)");
+}
+
 
 export default MessageModel;
