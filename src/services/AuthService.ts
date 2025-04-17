@@ -8,11 +8,18 @@ const SECRET_KEY = process.env.JWT_SECRET || 'defaultsecret';
 const JWT_EXPIRES_IN = '1h';
 
 class AuthService {
-    public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
+    public static async register(firstName: string, lastName: string, email: string, password: string,
+                                 phoneNumber: string, address: string, city: string, postalCode: string,
+                                 hiringDate: string): Promise<string> {
         const existingUser = await AccountModel.findOne({where: {email}});
 
         if (existingUser) {
             throw new BadRequestError(ErrorEnum.EMAIL_ALREADY_USED);
+        }
+
+        const hiringDateObj = new Date(hiringDate);
+        if (isNaN(hiringDateObj.getTime())) {
+            throw new BadRequestError(ErrorEnum.INVALID_HIRING_DATE);
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,6 +29,12 @@ class AuthService {
             lastName,
             email,
             password: hashedPassword,
+            address,
+            city,
+            postalCode,
+            hiringDate: hiringDateObj,
+            delay: 0,
+            absence: 0,
             isEnabled: true,
             phoneNumber: phoneNumber,
         });
