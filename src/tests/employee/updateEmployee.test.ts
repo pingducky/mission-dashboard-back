@@ -33,10 +33,22 @@ describe("Employee API", () => {
         const response = await request(app)
             .patch("/api/employee/1")
             .set("Authorization", `Bearer ${authToken}`)
-            .send({ lastName: "Johnson" });
+            .send({
+                lastName: "Johnson",
+                city: "New York",
+                postalCode: "10001",
+                hiringDate: "2023-10-01",
+                delay: 2,
+                absence: 1,
+            });
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("lastName", "Johnson");
+        expect(response.body).toHaveProperty("city", "New York");
+        expect(response.body).toHaveProperty("postalCode", "10001");
+        expect(response.body).toHaveProperty("hiringDate", "2023-10-01T00:00:00.000Z");
+        expect(response.body).toHaveProperty("delay", 2);
+        expect(response.body).toHaveProperty("absence", 1);
     });
 
     test("Doit retourner une erreur si les données de mise à jour sont invalides", async () => {

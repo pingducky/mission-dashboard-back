@@ -48,6 +48,33 @@ describe("Employee API", () => {
         expect(response.body).not.toHaveProperty("password");
     });
 
+    test("Doit retourner toutes les données d'un compte", async () => {
+        const response = await request(app)
+            .get("/api/employee/1")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toMatchObject({
+            id: 1,
+            firstName: "John",
+            lastName: "Doe",
+            email: "john.doe@example.com",
+            phoneNumber: "1234567890",
+            address: "TestAddress",
+            city: "TestCity",
+            postalCode: "49160",
+            hiringDate: "2023-10-01T00:00:00.000Z",
+            delay: 3,
+            absence: 1,
+            notificationMail: true,
+            notificationSms: false,
+            isEnabled: true,
+        });
+
+        expect(response.body).not.toHaveProperty("password");
+    });
+
     test("Doit retourner une erreur si l'ID est invalide", async () => {
         const response = await request(app)
             .get("/api/employee/abc")
@@ -70,28 +97,5 @@ describe("Employee API", () => {
         const response = await request(app).get("/api/employee/1");
 
         expect(response.status).toBe(401);
-    });
-
-    test("Doit retourner toutes les données d'un compte", async () => {
-        const response = await request(app)
-            .get("/api/employee/1")
-            .set("Authorization", `Bearer ${authToken}`);
-
-        expect(response.status).toBe(200);
-
-        expect(response.body).toHaveProperty("firstName", "John");
-        expect(response.body).toHaveProperty("lastName", "Doe");
-        expect(response.body).toHaveProperty("email", "john.doe@example.com");
-        expect(response.body).toHaveProperty("phoneNumber", "1234567890");
-        expect(response.body).toHaveProperty("address", "TestAddress");
-        expect(response.body).toHaveProperty("city", "TestCity");
-        expect(response.body).toHaveProperty("postalCode", "49160");
-        expect(response.body).toHaveProperty("hiringDate", "2023-10-01T00:00:00.000Z");
-        expect(response.body).toHaveProperty("delay", 3);
-        expect(response.body).toHaveProperty("absence", 1);
-        expect(response.body).toHaveProperty("notificationMail", true);
-        expect(response.body).toHaveProperty("notificationSms", false);
-        expect(response.body).toHaveProperty("isEnabled", true);
-        expect(response.body).not.toHaveProperty("password");
     });
 });
