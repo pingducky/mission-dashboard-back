@@ -19,5 +19,6 @@ export enum ErrorEnum {
     INTERNAL_SERVER_ERROR = "Erreur interne du serveur",
     BAD_REQUEST = "Mauvaise requête",
     ROLE_NOT_FOUND  = "Rôle non trouvé",
-    ID_INVALID = "ID invalide"
-  }
+    INVALID_ID = "Identifiant invalide",
+}
+  

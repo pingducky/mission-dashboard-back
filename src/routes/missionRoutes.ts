@@ -1,6 +1,6 @@
 import { Router } from "express";
 import upload from "../services/UploadService";
-import {createMission, getMissionById, updateMission} from "../controllers/MissionController";
+import {createMission, getMissionById, getMessagesByMissionId, updateMission} from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -67,5 +67,7 @@ router.post("/", auth, upload, createMission);
 router.put("/:id", auth, updateMission)
 
 router.get('/:id', auth, getMissionById);
+
+router.get("/:idMission/message", auth, getMessagesByMissionId)
 
 module.exports = router;

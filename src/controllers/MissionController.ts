@@ -12,6 +12,7 @@ import { handleHttpError } from "../services/ErrorService";
 import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
+import MessageModel from "../models/MessageModel";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -113,18 +114,18 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
             if (!Array.isArray(picturesToDelete)) {
                 throw new BadRequestError(ErrorEnum.BAD_REQUEST);
             }
-
+        
             for (const id of picturesToDelete) {
                 const picture = await PictureModel.findByPk(id);
-
+                
                 if (!picture) {
                     throw new NotFoundError(ErrorEnum.NOT_FOUND);
                 }
-
+        
                 try {
                     // Use promise-based file deletion
                     await fs.promises.unlink(picture.path);
-
+                    
                     // Only delete DB record after successful file deletion
                     await PictureModel.destroy({ where: { id } });
                 } catch (error: any) {
@@ -158,7 +159,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         // Réponse avec ou sans avertissement
         res.status(200).json({
             message: MissionEnum.MISSION_SUCCESSFULLY_UPDATED,
-            mission: { ...mission.toJSON() },
+            mission: { ...mission.toJSON() }, 
             rejectedUploadFiles,
             accepedUploadedFiles,
         });
@@ -203,5 +204,39 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
         return;
+    }
+};
+
+export const getMessagesByMissionId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const idMission = parseInt(req.params.idMission, 10);
+
+        //Vérification de l'ID
+        if (isNaN(idMission)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        //Vérifie que la mission existe
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            throw new NotFoundError(MissionEnum.MISSION_NOT_FOUND);
+        }
+
+        //Récupère tous les messages associés à cette mission
+        const messages = await MessageModel.findAll({
+            where: { idMission },
+            include: [
+                {
+                    model: AccountModel,
+                    as: "author",
+                    attributes: ["id", "firstName", "lastName", "email"]
+                }
+            ],
+            order: [["createdAt", "DESC"]]
+        });
+
+        res.status(200).json({ messages });
+    } catch (error) {
+        handleHttpError(error, res);
     }
 };
