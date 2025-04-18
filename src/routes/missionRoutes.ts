@@ -1,6 +1,6 @@
 import { Router } from "express";
 import upload from "../services/UploadService";
-import {createMission, getMissionById, getMessagesByMissionId, updateMission} from "../controllers/MissionController";
+import { createMission, getMessagesByMissionId, updateMission, getDetailMissionById } from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -66,7 +66,7 @@ router.post("/", auth, upload, createMission);
 
 router.put("/:id", auth, updateMission)
 
-router.get('/:id', auth, getMissionById);
+router.get('/:id', auth, getDetailMissionById);
 
 router.get("/:idMission/message", auth, getMessagesByMissionId)
 

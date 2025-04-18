@@ -167,26 +167,30 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
-export const getMissionById = async (req: Request, res: Response): Promise<void> => {
+export const getDetailMissionById = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-
-        //Conversion en nombre
         const missionId = Number(id);
+
         if (isNaN(missionId)) {
             res.status(400).json({ message: ErrorEnum.INVALID_ID });
             return;
         }
 
-        //Recherche de la mission avec jointure des photos
         const mission = await MissionModel.findByPk(missionId, {
             include: [
                 {
-                    model: PictureModel,
-                    as: 'pictures',
-                    attributes: ['id', 'name', 'alt', 'path']
+                    // Type de mission
+                    model: MissionTypeModel,
+                    as: 'type',
+                    attributes: ['shortLibel', 'longLibel']
+                },
+                {
+                    // Compte associé à la mission
+                    model: AccountModel,
+                    through: { attributes: [] }
                 }
-            ]
+            ],
         });
 
         if (!mission) {
@@ -195,15 +199,11 @@ export const getMissionById = async (req: Request, res: Response): Promise<void>
         }
 
         res.status(200).json({
-            mission: {
-                ...mission.toJSON(),
-                pictures: mission.pictures || []
-            }
+            mission: mission.toJSON()
         });
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
-        return;
     }
 };
 
