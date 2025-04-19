@@ -57,11 +57,6 @@ MissionModel.init(
     }
 );
 
-// MissionModel.hasMany(require('./PictureModel').default, {
-//     foreignKey: 'idMission',
-//     as: 'pictures',
-// });
-
 MissionModel.hasMany(PictureModel, {
     foreignKey: 'idMission',
     as: 'pictures',
