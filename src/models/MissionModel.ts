@@ -1,6 +1,8 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize";
 import MissionTypeModel from "./MissionTypeModel";
+import PictureModel from "./PictureModel";
+import MessageModel from "./MessageModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -10,6 +12,7 @@ class MissionModel extends Model {
     public estimatedEnd?: Date;
     public address!: string;
     public idMissionType!: number;
+    public pictures?: PictureModel[];
 }
 
 MissionModel.init(
@@ -54,5 +57,35 @@ MissionModel.init(
         timestamps: false,
     }
 );
+
+MissionModel.hasMany(PictureModel, {
+    foreignKey: 'idMission',
+    as: 'pictures',
+});
+
+MissionModel.belongsTo(MissionTypeModel, {
+    foreignKey: 'idMissionType',
+    as: 'missionType',
+});
+
+MissionTypeModel.hasMany(MissionModel, {
+    foreignKey: 'idMissionType',
+    as: 'missions',
+});
+
+MessageModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission'
+});
+
+MissionModel.hasMany(MessageModel, {
+    foreignKey: 'idMission',
+    as: 'messages',
+});
+
+PictureModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission'
+});
 
 export default MissionModel;

@@ -1,7 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from '../config/sequelize';
 import AccountModel from "./AccountModel";
-import MissionModel from "./MissionModel";
 
 class MessageModel extends Model {
     public id!: number;
@@ -33,7 +32,7 @@ MessageModel.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: MissionModel,
+                model: "mission",
                 key: 'id',
             },
         },
@@ -48,11 +47,6 @@ MessageModel.init(
 MessageModel.belongsTo(AccountModel, {
     foreignKey: "idAccount",
     as: "author",
-});
-
-MessageModel.belongsTo(MissionModel, {
-    foreignKey: "idMission",
-    as: "mission",
 });
 
 export default MessageModel;

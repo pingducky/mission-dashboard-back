@@ -9,6 +9,5 @@ export enum MissionEnum {
     MISSION_SUCCESSFULLY_DELETED = "Mission supprimée avec succès",
     ERROR_DURING_DELETING_MISSION = "Une erreur est survenue lors de la suppression de la mission.",
     INVALID_MISSION_ID = "L'ID de la mission est invalide",
-    ERROR_DURING_FETCHING_MISSION = "Une erreur est survenue lors de la récupération de la mission."
-
+    ERROR_DURING_FETCHING_MISSION = "Une erreur est survenue lors de la récupération de la mission.",
 }
