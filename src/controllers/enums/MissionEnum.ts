@@ -5,4 +5,5 @@ export enum MissionEnum {
     MISSION_SUCCESSFULLY_UPDATED = "Mission mise à jour avec succès",
     USER_NOT_FOUND = "L'utilisateur spécifié n'existe pas",
     MISSION_NOT_FOUND = "La mission n'existe pas",
+    MISSION_ADD_COMMENT_SUCCESS = "Commentaire ajouté avec succès",
 }
