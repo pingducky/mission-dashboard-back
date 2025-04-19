@@ -1,5 +1,6 @@
-import { Model, DataTypes } from 'sequelize';
+import {Model, DataTypes, Sequelize} from 'sequelize';
 import sequelize from "../config/sequelize";
+import MessageModel from "./MessageModel";
 
 class AccountModel extends Model {
     public id!: number;
@@ -9,6 +10,11 @@ class AccountModel extends Model {
     public phoneNumber!: string;
     public email!: string;
     public address!: string;
+    public city!: string;
+    public postalCode!: string;
+    public hiringDate!: Date;
+    public delay!: number;
+    public absence!: number;
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
@@ -46,8 +52,30 @@ AccountModel.init(
             },
         },
         address: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: true,
+        },
+        city: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
+        postalCode: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
+        hiringDate: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        delay: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: 0,
+        },
+        absence: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: 0,
         },
         notificationMail: {
             type: DataTypes.BOOLEAN,

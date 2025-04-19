@@ -20,5 +20,6 @@ export enum ErrorEnum {
     BAD_REQUEST = "Mauvaise requête",
     ROLE_NOT_FOUND  = "Rôle non trouvé",
     INVALID_ID = "Identifiant invalide",
+    INVALID_HIRING_DATE = "La date d'embauche est invalide",
 }
   

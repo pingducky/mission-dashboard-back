@@ -15,10 +15,26 @@ beforeAll(async () => {
             lastName: "Doe",
             email: "john.doe@example.com",
             password: "password123",
+            address: "123 Main St",
+            postalCode: "12345",
+            city: "Paris",
+            hiringDate: new Date("2024-04-14T12:00:00Z"),
             phoneNumber: "1234567890",
         });
 
     authToken = userResponse.body.token;
+
+    const upadateResponse = await request(app)
+        .patch("/api/employee/1")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+            address: "TestAddress",
+            city: "TestCity",
+            postalCode: "49160",
+            hiringDate: "2023-10-01",
+            delay: 3,
+            absence: 1
+        });
 });
 
 afterAll(async () => {
@@ -33,6 +49,34 @@ describe("Employee API", () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("id", 1);
+        expect(response.body).not.toHaveProperty("password");
+    });
+
+    test("Doit retourner toutes les données d'un compte", async () => {
+        const response = await request(app)
+            .get("/api/employee/1")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toMatchObject({
+            id: 1,
+            firstName: "John",
+            lastName: "Doe",
+            email: "john.doe@example.com",
+            phoneNumber: "1234567890",
+            address: "TestAddress",
+            city: "TestCity",
+            postalCode: "49160",
+            hiringDate: "2023-10-01T00:00:00.000Z",
+            delay: 3,
+            absence: 1,
+            notificationMail: true,
+            notificationSms: false,
+            isEnabled: true,
+        });
+
+        expect(response.body).not.toHaveProperty("password");
     });
 
     test("Doit retourner une erreur si l'ID est invalide", async () => {

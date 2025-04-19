@@ -21,6 +21,10 @@ describe('Inscription API', () => {
           lastName: 'Doe',
           email: 'john.doe@example.com',
           password: 'password123',
+          address: "123 Main St",
+          postalCode: "12345",
+          city: "Paris",
+          hiringDate: new Date("2024-04-14T12:00:00Z"),
           phoneNumber: '1234567890',
         });
 
@@ -51,6 +55,10 @@ describe('Inscription API', () => {
           lastName: 'Doe',
           email: 'john.doe@example.com',
           password: 'password123',
+          address: "123 Main St",
+          postalCode: "12345",
+          city: "Paris",
+          hiringDate: new Date("2024-04-14T12:00:00Z"),
           phoneNumber: '1234567890',
         });
 
@@ -61,6 +69,10 @@ describe('Inscription API', () => {
           lastName: 'Smith',
           email: 'john.doe@example.com',
           password: 'newpassword123',
+          address: "123 Main St",
+          postalCode: "12345",
+          city: "Paris",
+          hiringDate: new Date("2024-04-14T12:00:00Z"),
           phoneNumber: '0987654321',
         });
 
@@ -76,6 +88,10 @@ describe('Inscription API', () => {
           lastName: 'Doe',
           email: 'invalid-email',
           password: 'password123',
+          address: "123 Main St",
+          postalCode: "12345",
+          city: "Paris",
+          hiringDate: new Date("2024-04-14T12:00:00Z"),
           phoneNumber: '1234567890',
         });
   

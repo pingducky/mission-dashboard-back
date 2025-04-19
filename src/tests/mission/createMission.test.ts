@@ -10,7 +10,7 @@ import fs from 'fs';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
 import MissionModel from '../../models/MissionModel';
 import PictureModel from '../../models/PictureModel';
-import { generateAuthTokenForTest } from '../utils/TestProvider';
+import { generateAuthTokenForTest } from '../Utils/TestProvider';
 
 let authToken: string;
 

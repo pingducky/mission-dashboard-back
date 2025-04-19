@@ -11,6 +11,10 @@ const defaultUser = {
     firstName: "Jane",
     lastName: "Smith",
     password: "password123",
+    address: "123 Main St",
+    postalCode: "12345",
+    city: "Paris",
+    hiringDate: new Date("2024-04-14T12:00:00Z"),
     phoneNumber: "0987654321",
 };
 
@@ -48,6 +52,10 @@ beforeAll(async () => {
             lastName: "Doe",
             email: "john.doe@example.com",
             password: "password123",
+            address: "123 Main St",
+            postalCode: "12345",
+            city: "Paris",
+            hiringDate: new Date("2024-04-14T12:00:00Z"),
             phoneNumber: "1234567890",
         });
 
@@ -172,5 +180,16 @@ describe("Employee API", () => {
             })
         ]);
     });
-    
+
+    test("Ne doit jamais retourner le mot de passe des employés", async () => {
+        const res = await request(app)
+            .get("/api/employee")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(res.status).toBe(200);
+
+        res.body.forEach((employee: any) => {
+            expect(employee).not.toHaveProperty("password");
+        });
+    });
 });
