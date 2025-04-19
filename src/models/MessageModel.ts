@@ -49,20 +49,4 @@ MessageModel.belongsTo(AccountModel, {
     as: "author",
 });
 
-
-const MissionModel = require("./MissionModel").default;
-
-// Sécurité : ne fait l’association que si le modèle est bien chargé
-if (MissionModel && MissionModel.prototype instanceof Model) {
-    setImmediate(() => {
-        MessageModel.belongsTo(MissionModel, {
-            foreignKey: "idMission",
-            as: "mission",
-        });
-    });
-} else {
-    console.warn("[WARN] MissionModel not ready — skipping MessageModel.belongsTo(MissionModel)");
-}
-
-
 export default MessageModel;

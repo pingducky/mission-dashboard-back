@@ -2,6 +2,7 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize";
 import MissionTypeModel from "./MissionTypeModel";
 import PictureModel from "./PictureModel";
+import MessageModel from "./MessageModel";
 
 class MissionModel extends Model {
     public id!: number;
@@ -59,12 +60,32 @@ MissionModel.init(
 
 MissionModel.hasMany(PictureModel, {
     foreignKey: 'idMission',
-    as: 'pictures'
+    as: 'pictures',
 });
 
 MissionModel.belongsTo(MissionTypeModel, {
     foreignKey: 'idMissionType',
-    as: 'type'
+    as: 'missionType',
+});
+
+MissionTypeModel.hasMany(MissionModel, {
+    foreignKey: 'idMissionType',
+    as: 'missions',
+});
+
+MessageModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission'
+});
+
+MissionModel.hasMany(MessageModel, {
+    foreignKey: 'idMission',
+    as: 'messages',
+});
+
+PictureModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission'
 });
 
 export default MissionModel;

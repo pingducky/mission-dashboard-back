@@ -167,6 +167,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
 export const getDetailMissionById = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -182,29 +183,35 @@ export const getDetailMissionById = async (req: Request, res: Response): Promise
                 {
                     // Type de mission
                     model: MissionTypeModel,
-                    as: 'type',
+                    as: 'missionType',
                     attributes: ['shortLibel', 'longLibel']
                 },
                 {
-                    // Compte associé à la mission
+                    // Participants de la mission
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName', 'email'],
                     through: { attributes: [] }
                 },
                 {
+                    // Images liées à la mission
                     model: PictureModel,
                     as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path']
                 },
                 {
+                    // Messages + auteur de chaque message
                     model: MessageModel,
                     as: 'messages',
                     attributes: ['id', 'message', 'createdAt'],
-                    include: [{
-                        model: AccountModel,
-                        attributes: ['id', 'firstName', 'lastName']
-                    }]
+                    include: [
+                        {
+                            model: AccountModel,
+                            as: 'author',
+                            attributes: ['id', 'firstName', 'lastName']
+                        }
+                    ]
                 }
-            ],
+            ]
         });
 
         if (!mission) {

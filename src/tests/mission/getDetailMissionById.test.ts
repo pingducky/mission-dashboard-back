@@ -9,7 +9,8 @@ import { ErrorEnum } from "../../enums/errorEnum";
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import AccountModel from '../../models/AccountModel';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
-import { ValidationError } from 'sequelize';
+import PictureModel from '../../models/PictureModel';
+import MessageModel from '../../models/MessageModel';
 
 let authToken: string;
 let missionId: number;
@@ -21,13 +22,11 @@ beforeAll(async () => {
 
     authToken = await generateAuthTokenForTest();
 
-    // Crée un type de mission
     missionType = await MissionTypeModel.create({
         longLibel: "Test Mission Type",
         shortLibel: "Test"
     });
 
-    // Crée une mission
     const mission = await MissionModel.create({
         description: "Test mission description",
         timeBegin: "2025-02-17T10:00:00Z",
@@ -50,6 +49,19 @@ beforeAll(async () => {
         idAccount: assignedAccount.id,
         idMission: mission.id
     });
+
+    await PictureModel.create({
+        idMission: mission.id,
+        name: "test-image.png",
+        alt: "Test image",
+        path: "uploads/test-image.png"
+    });
+
+    await MessageModel.create({
+        idMission: mission.id,
+        idAccount: assignedAccount.id,
+        message: "Hello this is a test comment"
+    });
 });
 
 afterAll(async () => {
@@ -57,35 +69,54 @@ afterAll(async () => {
 });
 
 describe("getDetailMissionById", () => {
-    test("Mission existante avec type, image et compte assigné", async () => {
+    test("Mission existante avec type, images, messages et participants", async () => {
         const response = await request(app)
             .get(`/api/mission/${missionId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
 
-        expect(response.body.mission).toMatchObject({
+        const mission = response.body.mission;
+
+        expect(mission).toMatchObject({
             id: missionId,
             description: "Test mission description",
             timeBegin: "2025-02-17T10:00:00.000Z",
             address: "Test address",
             idMissionType: missionType.id,
-            type: {
+            missionType: {
                 shortLibel: "Test",
                 longLibel: "Test Mission Type"
             }
         });
 
-        expect(response.body.mission.AccountModels).toEqual([
+        // Participants
+        expect(mission.AccountModels).toEqual([
             expect.objectContaining({
                 id: assignedAccount.id,
                 firstName: assignedAccount.firstName,
                 lastName: assignedAccount.lastName,
                 email: assignedAccount.email,
-                phoneNumber: assignedAccount.phoneNumber,
-                isEnabled: assignedAccount.isEnabled,
             })
         ]);
+
+        expect(mission.pictures).toEqual([
+            expect.objectContaining({
+                name: "test-image.png",
+                alt: "Test image",
+                path: "uploads/test-image.png"
+            })
+        ]);
+
+        expect(mission.messages.length).toBeGreaterThan(0);
+        expect(mission.messages[0]).toMatchObject({
+            message: "Hello this is a test comment",
+            author: {
+                id: assignedAccount.id,
+                firstName: assignedAccount.firstName,
+                lastName: assignedAccount.lastName
+            }
+        });
     });
 
     test("Mission inexistante", async () => {
