@@ -11,6 +11,8 @@ import AccountModel from '../../models/AccountModel';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
 import PictureModel from '../../models/PictureModel';
 import MessageModel from '../../models/MessageModel';
+import path from "path";
+import fs from "fs";
 
 let authToken: string;
 let missionId: number;
@@ -50,13 +52,6 @@ beforeAll(async () => {
         idMission: mission.id
     });
 
-    await PictureModel.create({
-        idMission: mission.id,
-        name: "test-image.png",
-        alt: "Test image",
-        path: "uploads/test-image.png"
-    });
-
     await MessageModel.create({
         idMission: mission.id,
         idAccount: assignedAccount.id,
@@ -69,20 +64,57 @@ afterAll(async () => {
 });
 
 describe("getDetailMissionById", () => {
-    test("Mission existante avec type, images, messages et participants", async () => {
-        const response = await request(app)
+    test("Mission existante avec type, images, messages et participants (via upload réel)", async () => {
+        if (!process.env.FILES_UPLOAD_OUTPUT) {
+            throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour ce test.');
+        }
+
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_image.png');
+
+        const account = await AccountModel.create({
+            firstName: "Jean",
+            lastName: "Dupont",
+            email: "jean.dupont@example.com",
+            password: "securepassword",
+            phoneNumber: "0600000000",
+            isEnabled: true
+        });
+
+        const requestBuilder = request(app)
+            .post('/api/mission')
+            .field("description", "Mission test complète")
+            .field("timeBegin", "2025-03-01T08:00:00Z")
+            .field("address", "Test adresse")
+            .field("missionTypeId", missionType.id)
+            .field("accountAssignId", account.id) // assignation via champ
+            .set("Authorization", `Bearer ${authToken}`);
+
+        await requestBuilder.attach("pictures", imagePath);
+        const response = await requestBuilder;
+        expect(response.status).toBe(201);
+
+        const missionId = response.body.mission.id;
+        const uploadedFileName = path.basename(response.body.accepedUploadedFiles[0]);
+
+        await MessageModel.create({
+            idMission: missionId,
+            idAccount: account.id,
+            message: "Message test"
+        });
+
+        const getResponse = await request(app)
             .get(`/api/mission/${missionId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        expect(response.status).toBe(200);
+        expect(getResponse.status).toBe(200);
 
-        const mission = response.body.mission;
+        const mission = getResponse.body.mission;
 
         expect(mission).toMatchObject({
             id: missionId,
-            description: "Test mission description",
-            timeBegin: "2025-02-17T10:00:00.000Z",
-            address: "Test address",
+            description: "Mission test complète",
+            timeBegin: "2025-03-01T08:00:00.000Z",
+            address: "Test adresse",
             idMissionType: missionType.id,
             missionType: {
                 shortLibel: "Test",
@@ -90,31 +122,32 @@ describe("getDetailMissionById", () => {
             }
         });
 
-        // Participants
+        // Participants a la mission
         expect(mission.AccountModels).toEqual([
             expect.objectContaining({
-                id: assignedAccount.id,
-                firstName: assignedAccount.firstName,
-                lastName: assignedAccount.lastName,
-                email: assignedAccount.email,
+                id: account.id,
+                firstName: account.firstName,
+                lastName: account.lastName,
+                email: account.email
             })
         ]);
 
-        expect(mission.pictures).toEqual([
-            expect.objectContaining({
-                name: "test-image.png",
-                alt: "Test image",
-                path: "uploads/test-image.png"
-            })
-        ]);
+        // Image
+        expect(mission.pictures.length).toBeGreaterThan(0);
+        expect(mission.pictures[0]).toMatchObject({
+            name: expect.stringContaining(uploadedFileName),
+            path: expect.stringContaining(uploadedFileName),
+            alt: expect.any(String)
+        });
 
+        // Message avec auteur
         expect(mission.messages.length).toBeGreaterThan(0);
         expect(mission.messages[0]).toMatchObject({
-            message: "Hello this is a test comment",
+            message: "Message test",
             author: {
-                id: assignedAccount.id,
-                firstName: assignedAccount.firstName,
-                lastName: assignedAccount.lastName
+                id: account.id,
+                firstName: account.firstName,
+                lastName: account.lastName
             }
         });
     });
