@@ -75,6 +75,24 @@ afterAll(async () => {
 });
 
 describe('GET /api/mission/:id - Liste des missions filtrées', () => {
+    test('ID de compte invalide', async () => {
+        const response = await request(app)
+            .get(`/api/mission/listMissions/invalid`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(ErrorEnum.INVALID_ID);
+    });
+
+    test('Compte inexistant', async () => {
+        const response = await request(app)
+            .get(`/api/mission/listMissions/999999`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe(MissionEnum.USER_NOT_FOUND);
+    });
+
     test('Retourne toutes les missions liées au compte', async () => {
         const response = await request(app)
             .get(`/api/mission/listMissions/${accountId}`)
@@ -133,6 +151,21 @@ describe('GET /api/mission/:id - Liste des missions filtrées', () => {
         expect(missions.length).toBe(3);
     });
 
+    test('Filtre par un nombre limité de missions', async () => {
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}?limit=2`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBeLessThanOrEqual(2);
+
+        // Vérifie l'ordre décroissant des dates
+        const dates = missions.map(m => new Date(m.timeBegin).getTime());
+        expect(dates).toEqual([...dates].sort((a, b) => b - a));
+    });
+
     test('Filtre combiné type + dates', async () => {
         const response = await request(app)
             .get(`/api/mission/listMissions/${accountId}?filterByType=1&from=2025-03-27&to=2025-04-01`)
@@ -145,22 +178,26 @@ describe('GET /api/mission/:id - Liste des missions filtrées', () => {
         expect(missions[0].description).toBe("Mission B");
     });
 
-    test('ID de compte invalide', async () => {
+    test('Retourne missions filtrées par date et limitées en nombre', async () => {
         const response = await request(app)
-            .get(`/api/mission/listMissions/invalid`)
+            .get(`/api/mission/listMissions/${accountId}?from=2025-03-26&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        expect(response.status).toBe(400);
-        expect(response.body.error).toBe(ErrorEnum.INVALID_ID);
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
     });
 
-    test('Compte inexistant', async () => {
+    test('Combine limit, type et date pour retourner les missions correspondantes', async () => {
         const response = await request(app)
-            .get(`/api/mission/listMissions/999999`)
+            .get(`/api/mission/listMissions/${accountId}?filterByType=1&from=2025-03-01&to=2025-04-30&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        expect(response.status).toBe(404);
-        expect(response.body.error).toBe(MissionEnum.USER_NOT_FOUND);
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
     });
 
     test('Retourne 200 avec une liste vide si aucun résultat', async () => {

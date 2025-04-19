@@ -210,24 +210,31 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  * - from=YYYY-MM-DD        → filtre les missions dont la date de début (timeBegin) est après ou égale à cette date
  * - to=YYYY-MM-DD          → filtre les missions dont la date de début est avant ou égale à cette date
  * - filterByType=ID        → filtre les missions par ID de type de mission (idMissionType)
+ * - limit=N                → limite le nombre de missions retournées à N
  *
  * Exemples d'appels :
- * GET /api/mission/1?from=2025-03-25
+ * GET /api/mission/listMissions/1?from=2025-03-25
  *   → Missions à partir du 25 mars 2025
  *
- * GET /api/mission/1?from=2025-03-25&to=2025-03-30
- *   → Missions entre le 25 et le 30 mars
+ * GET /api/mission/listMissions/1?from=2025-03-25&to=2025-03-30
+ *   → Missions entre le 25 et le 30 mars 2025
  *
- * GET /api/mission/1?filterByType=2
+ * GET /api/mission/listMissions/1?filterByType=2
  *    → Récupération des missions du type 2
  *
- * GET /api/mission/1?filterByType=2&from=2025-03-25&to=2025-04-01
+ * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01
  *   → Missions du type 2, entre deux dates
+ *
+ * GET /api/mission/listMissions/1?limit=5
+ *  → Récupération des 5 dernières missions
+ *
+ *  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01&limit=5
+ *   → Missions du type 2, entre deux dates, limitées à 5
  */
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { from, to, filterByType } = req.query;
+        const { from, to, filterByType, limit } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
@@ -268,14 +275,14 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                 {
                     model: PictureModel,
                     as: 'pictures',
-                    attributes: ['id', 'name', 'alt', 'path']
                 },
                 {
                     model: MissionTypeModel,
                     as: 'missionType',
-                    attributes: ['id', 'shortLibel', 'longLibel']
                 }
-            ]
+            ],
+            order: [['timeBegin', 'DESC']],
+            limit: limit ? parseInt(limit as string, 10) : undefined
         });
 
         res.status(200).json({ missions });
