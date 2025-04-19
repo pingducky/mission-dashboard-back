@@ -69,4 +69,5 @@ router.put("/:id", auth, updateMission)
 router.get("/:idMission/message", auth, getMessagesByMissionId)
 
 router.get("/MissionCategorized/:id", auth, getMissionsCategorizedByTime);
+
 module.exports = router;

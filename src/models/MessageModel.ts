@@ -50,9 +50,4 @@ MessageModel.belongsTo(AccountModel, {
     as: "author",
 });
 
-MessageModel.belongsTo(MissionModel, {
-    foreignKey: "idMission",
-    as: "mission",
-});
-
 export default MessageModel;

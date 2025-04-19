@@ -47,9 +47,15 @@ afterAll(async () => {
 
 describe('GET /api/missions/:id', () => {
 
-    const pastDate = "2025-04-14T10:00:00Z";
-    const currentDate = "2025-04-15T10:00:00Z";
-    const futureDate = "2025-04-16T10:00:00Z";
+    const today = new Date();
+    const currentDate = new Date(today);
+    const pastDate = new Date(today);
+    const futureDate = new Date(today);
+
+    [pastDate, currentDate, futureDate].forEach(date => date.setHours(10, 0, 0, 0));
+
+    pastDate.setDate(today.getDate() - 1);
+    futureDate.setDate(today.getDate() + 1);
 
     beforeEach(async () => {
         const missions = await MissionModel.bulkCreate([
@@ -61,15 +67,34 @@ describe('GET /api/missions/:id', () => {
                 idMissionType: 1
             },
             {
+                description: "Mission passée2",
+                timeBegin: pastDate,
+                timeEnd: pastDate,
+                address: "Rue du passé2",
+                idMissionType: 1
+            },
+            {
                 description: "Mission en cours",
                 timeBegin: currentDate,
                 address: "Rue du présent",
                 idMissionType: 1
             },
             {
+                description: "Mission en cours2",
+                timeBegin: currentDate,
+                address: "Rue du présent2",
+                idMissionType: 1
+            },
+            {
                 description: "Mission future",
                 timeBegin: futureDate,
                 address: "Rue du futur",
+                idMissionType: 1
+            },
+            {
+                description: "Mission future2",
+                timeBegin: futureDate,
+                address: "Rue du futur2",
                 idMissionType: 1
             }
         ], { returning: true });
@@ -93,74 +118,171 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie une erreur si l’utilisateur n’existe pas', async () => {
         const response = await request(app)
-            .get('/api/missions/9999')
+            .get('/api/mission/MissionCategorized/9999')
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(404);
         expect(response.body.error).toBe(MissionEnum.USER_NOT_FOUND);
     });
 
+    test('Renvoie 401 si non authentifié', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}`);
+
+        expect(response.status).toBe(401);
+    });
+
     test('Renvoie toutes les catégories si aucun filtre', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.past.length).toBe(1);
-        expect(response.body.current.length).toBe(1);
-        expect(response.body.future.length).toBe(1);
+        expect(response.body.past.length).toBe(2);
+        expect(response.body.current.length).toBe(2);
+        expect(response.body.future.length).toBe(2);
     });
 
     test('Renvoie uniquement les missions passées', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}?filter=past`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.past.length).toBe(1);
+        expect(response.body.past.length).toBe(2);
         expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(0);
+    });
+
+    test('Renvoie uniquement les missions en cours', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(0);
+        expect(response.body.current.length).toBe(2);
         expect(response.body.future.length).toBe(0);
     });
 
     test('Renvoie uniquement les missions futures', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}?filter=future`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
         expect(response.body.past.length).toBe(0);
         expect(response.body.current.length).toBe(0);
-        expect(response.body.future.length).toBe(1);
+        expect(response.body.future.length).toBe(2);
     });
 
-    test('Renvoie uniquement les missions en cours', async () => {
+    test('Renvoie les missions combinées (past + current)', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}?filter=current`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=current`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.past.length).toBe(0);
-        expect(response.body.current.length).toBe(1);
+        expect(response.body.past.length).toBe(2);
+        expect(response.body.current.length).toBe(2);
         expect(response.body.future.length).toBe(0);
     });
 
     test('Renvoie les missions combinées (past + future)', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}?filter=past&filter=future`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.past.length).toBe(1);
-        expect(response.body.future.length).toBe(1);
+        expect(response.body.past.length).toBe(2);
         expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(2);
+    });
+
+    test('Renvoie les missions combinées (current + past)', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current&filter=past`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(2);
+        expect(response.body.current.length).toBe(2);
+        expect(response.body.future.length).toBe(0);
+    });
+
+    test('Renvoie les missions combinées (current + future)', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current&filter=future`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(0);
+        expect(response.body.current.length).toBe(2);
+        expect(response.body.future.length).toBe(2);
+    });
+
+    test('Renvoie les missions combinées (future + past)', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future&filter=past`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(2);
+        expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(2);
+    });
+
+    test('Renvoie les missions combinées (future + current)', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future&filter=current`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(0);
+        expect(response.body.current.length).toBe(2);
+        expect(response.body.future.length).toBe(2);
     });
 
     test('Renvoie avec limitation de résultat par catégorie', async () => {
         const response = await request(app)
-            .get(`/api/missions/${createdAccountId}?filter=past&limit=1`)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.past.length).toBeLessThanOrEqual(1);
+        expect(response.body.past.length).toBe(1);
+        expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(0);
+    });
+
+    test('Ignore les filtres inconnus et ne renvoie rien', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=invalid`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(0);
+        expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(0);
+    });
+
+    test('Ignore les filtres inconnus mais garde les valides', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=invalid&filter=future`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(0);
+        expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(2);
+    });
+
+    test('Applique le limit sur plusieurs filtres combinés', async () => {
+        const response = await request(app)
+            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=future&limit=1`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.past.length).toBe(1);
+        expect(response.body.current.length).toBe(0);
+        expect(response.body.future.length).toBe(1);
     });
 });
