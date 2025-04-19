@@ -140,4 +140,7 @@ describe('Suppression de mission', () => {
         expect(picAfter.length).toBe(0);
         expect(fs.existsSync(uploadedFilePath)).toBe(false);
     });
+
+    test.skip('TODO: Vérifie la suppression physique des fichiers liés à une mission', () => {
+    });
 });
