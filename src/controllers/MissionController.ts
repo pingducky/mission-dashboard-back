@@ -188,7 +188,21 @@ export const getDetailMissionById = async (req: Request, res: Response): Promise
                 {
                     // Compte associé à la mission
                     model: AccountModel,
+                    attributes: ['id', 'firstName', 'lastName', 'email'],
                     through: { attributes: [] }
+                },
+                {
+                    model: PictureModel,
+                    as: 'pictures',
+                },
+                {
+                    model: MessageModel,
+                    as: 'messages',
+                    attributes: ['id', 'message', 'createdAt'],
+                    include: [{
+                        model: AccountModel,
+                        attributes: ['id', 'firstName', 'lastName']
+                    }]
                 }
             ],
         });
@@ -237,6 +251,7 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 
         res.status(200).json({ messages });
     } catch (error) {
+        console.error("Erreur dans getDetailMissionById:", error); // ← Ajoute ça
         handleHttpError(error, res);
     }
 };
