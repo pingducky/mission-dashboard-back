@@ -208,6 +208,40 @@ export const deleteMission = async (req: Request, res: Response): Promise<void> 
     }
 };
 
+export const addMessageToMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { message, idAccount } = req.body;
+        const idMission = parseInt(req.params.idMission, 10);
+
+        if (!message || !idAccount || isNaN(idMission)) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            throw new NotFoundError(MissionEnum.MISSION_NOT_FOUND);
+        }
+
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const newMessage = await MessageModel.create({
+            message,
+            idAccount,
+            idMission,
+        });
+
+        res.status(201).json({
+            message: MissionEnum.MISSION_ADD_COMMENT_SUCCESS,
+            id: newMessage.id,
+        });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
 export const getMessagesByMissionId = async (req: Request, res: Response): Promise<void> => {
     try {
         const idMission = parseInt(req.params.idMission, 10);
