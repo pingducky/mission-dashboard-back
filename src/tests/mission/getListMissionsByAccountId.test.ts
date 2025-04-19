@@ -18,6 +18,11 @@ type MissionResponse = {
     timeBegin: string;
     address: string;
     idMissionType: number;
+    AccountModels: {
+        id: number;
+        firstName: string;
+        lastName: string;
+    }[];
 };
 
 beforeAll(async () => {
@@ -74,7 +79,7 @@ afterAll(async () => {
     await sequelize.close();
 });
 
-describe('GET /api/mission/:id - Liste des missions filtrées', () => {
+describe('Liste des missions filtrées', () => {
     test('ID de compte invalide', async () => {
         const response = await request(app)
             .get(`/api/mission/listMissions/invalid`)
@@ -102,6 +107,28 @@ describe('GET /api/mission/:id - Liste des missions filtrées', () => {
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(3);
+    });
+
+    test('Chaque mission contient les comptes participants', async () => {
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBeGreaterThan(0);
+
+        for (const mission of missions) {
+            expect(mission.AccountModels).toBeDefined();
+            expect(Array.isArray(mission.AccountModels)).toBe(true);
+            expect(mission.AccountModels.length).toBeGreaterThan(0);
+
+            const participant = mission.AccountModels[0];
+            expect(participant).toHaveProperty('id');
+            expect(participant).toHaveProperty('firstName');
+            expect(participant).toHaveProperty('lastName');
+        }
     });
 
     test('Filtre avec la date de début "from"', async () => {
