@@ -3,7 +3,7 @@ import app from "../..";
 import { resetDatabase } from "../../utils/databaseUtils";
 import { ErrorEnum } from "../../enums/errorEnum";
 import sequelize from "../../config/sequelize";
-import { generateAuthTokenForTest, giveAdminRole, initRoles } from "../utils/TestProvider";
+import { generateAuthTokenForTest, giveAdminRole, initRoles } from "../Utils/TestProvider";
 
 let authToken: string;
 
