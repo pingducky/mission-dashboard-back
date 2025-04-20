@@ -168,6 +168,80 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+export const deleteMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+
+        if (!id || isNaN(Number(id))) {
+            res.status(400).json({ message: MissionEnum.INVALID_MISSION_ID });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(id);
+
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        // Supprime les messages liés à la mission
+        await MessageModel.destroy({ where: { idMission: id } });
+
+        // Supprime les assignations liées
+        await AccountMissionAssignModel.destroy({ where: { idMission: id } });
+
+        // Supprime les images sur le disque
+        const pictures = await PictureModel.findAll({ where: { idMission: id } });
+        for (const picture of pictures) {
+            if (fs.existsSync(picture.path)) {
+                fs.unlinkSync(picture.path);
+            }
+        }
+
+        // Supprime les enregistrements d'images en BDD
+        await PictureModel.destroy({ where: { idMission: id } });
+
+        await mission.destroy({ force: true });
+
+        res.status(200).json({ message: MissionEnum.MISSION_SUCCESSFULLY_DELETED });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
+export const addMessageToMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { message, idAccount } = req.body;
+        const idMission = parseInt(req.params.idMission, 10);
+
+        if (!message || !idAccount || isNaN(idMission)) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        const mission = await MissionModel.findByPk(idMission);
+        if (!mission) {
+            throw new NotFoundError(MissionEnum.MISSION_NOT_FOUND);
+        }
+
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const newMessage = await MessageModel.create({
+            message,
+            idAccount,
+            idMission,
+        });
+
+        res.status(201).json({
+            message: MissionEnum.MISSION_ADD_COMMENT_SUCCESS,
+            id: newMessage.id,
+        });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
 
 export const getMessagesByMissionId = async (req: Request, res: Response): Promise<void> => {
     try {
