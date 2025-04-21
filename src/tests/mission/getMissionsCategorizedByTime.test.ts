@@ -109,7 +109,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie une erreur si ID invalide', async () => {
         const response = await request(app)
-            .get('/api/mission/MissionCategorized/abc')
+            .get('/api/mission/missionCategorized/abc')
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(400);
@@ -118,7 +118,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie une erreur si l’utilisateur n’existe pas', async () => {
         const response = await request(app)
-            .get('/api/mission/MissionCategorized/9999')
+            .get('/api/mission/missionCategorized/9999')
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(404);
@@ -127,14 +127,14 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie 401 si non authentifié', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}`);
+            .get(`/api/mission/missionCategorized/${createdAccountId}`);
 
         expect(response.status).toBe(401);
     });
 
     test('Renvoie toutes les catégories si aucun filtre', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -145,7 +145,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie uniquement les missions passées', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=past`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -156,7 +156,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie uniquement les missions en cours', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=current`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -167,7 +167,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie uniquement les missions futures', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -178,7 +178,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (past + current)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=current`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=past&filter=current`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -189,7 +189,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (past + future)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=future`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=past&filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -200,7 +200,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (current + past)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current&filter=past`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=current&filter=past`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -211,7 +211,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (current + future)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=current&filter=future`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=current&filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -222,7 +222,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (future + past)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future&filter=past`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=future&filter=past`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -233,7 +233,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie les missions combinées (future + current)', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=future&filter=current`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=future&filter=current`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -244,7 +244,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Renvoie avec limitation de résultat par catégorie', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&limit=1`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=past&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -255,7 +255,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Ignore les filtres inconnus et ne renvoie rien', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=invalid`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=invalid`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -266,7 +266,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Ignore les filtres inconnus mais garde les valides', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=invalid&filter=future`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=invalid&filter=future`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);
@@ -277,7 +277,7 @@ describe('GET /api/missions/:id', () => {
 
     test('Applique le limit sur plusieurs filtres combinés', async () => {
         const response = await request(app)
-            .get(`/api/mission/MissionCategorized/${createdAccountId}?filter=past&filter=future&limit=1`)
+            .get(`/api/mission/missionCategorized/${createdAccountId}?filter=past&filter=future&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
         expect(response.status).toBe(200);

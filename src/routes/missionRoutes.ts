@@ -74,6 +74,6 @@ router.post('/:idMission/message', auth, addMessageToMission);
 
 router.get("/listMissions/:id", auth, auth, getListMissionsByAccountId);
 
-router.get("/MissionCategorized/:id", auth, getMissionsCategorizedByTime);
+router.get("/missionCategorized/:id", auth, getMissionsCategorizedByTime);
 
 module.exports = router;
