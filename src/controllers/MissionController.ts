@@ -305,66 +305,6 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  *  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01&limit=5
  *   → Missions du type 2, entre deux dates, limitées à 5
  */
-// export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         const accountId = parseInt(req.params.id, 10);
-//         const { from, to, filterByType, limit } = req.query;
-//
-//         if (isNaN(accountId)) {
-//             throw new BadRequestError(ErrorEnum.INVALID_ID);
-//         }
-//
-//         const account = await AccountModel.findByPk(accountId);
-//         if (!account) {
-//             throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
-//         }
-//
-//         // Construction dynamique du WHERE
-//         const where: any = {};
-//
-//         if (from) {
-//             where.timeBegin = { [Op.gte]: new Date(from as string) };
-//         }
-//
-//         if (to) {
-//             where.timeBegin = {
-//                 ...(where.timeBegin || {}),
-//                 [Op.lte]: new Date(to as string)
-//             };
-//         }
-//
-//         if (filterByType) {
-//             where.idMissionType = parseInt(filterByType as string, 10);
-//         }
-//
-//         const missions = await MissionModel.findAll({
-//             where,
-//             include: [
-//                 {
-//                     model: AccountModel,
-//                     where: { id: accountId },
-//                     attributes: [],
-//                     through: { attributes: [] }
-//                 },
-//                 {
-//                     model: PictureModel,
-//                     as: 'pictures',
-//                 },
-//                 {
-//                     model: MissionTypeModel,
-//                     as: 'missionType',
-//                 }
-//             ],
-//             order: [['timeBegin', 'DESC']],
-//             limit: limit ? parseInt(limit as string, 10) : undefined
-//         });
-//
-//         res.status(200).json({ missions });
-//     } catch (error) {
-//         handleHttpError(error, res);
-//     }
-// };
-
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
