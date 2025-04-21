@@ -364,10 +364,10 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
  * Gestion du filtre par période et de la limitation du nombre de résultats :
  *
  * Query params disponibles :
- * - filter=past            → renvoie uniquement les missions passées
- * - filter=current         → renvoie uniquement les missions en cours
- * - filter=future          → renvoie uniquement les missions futures
- * - filter=past&filter=future → permet de combiner plusieurs filtres (peut être utilisé plusieurs fois)
+ * - filters=past           → renvoie uniquement les missions passées
+ * - filters=current        → renvoie uniquement les missions en cours
+ * - filters=future         → renvoie uniquement les missions futures
+ * - filters=past,future    → permet de combiner plusieurs filtres
  * - limit=10               → limite le nombre de missions retournées par catégorie
  *
  * Si aucun filtre n'est spécifié, toutes les catégories sont retournées (past, current, future).
@@ -376,19 +376,19 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
  * GET /api/missions/1
  *   → Renvoie toutes les missions (passées, en cours et futures)
  *
- * GET /api/missions/1?filter=past
+ * GET /api/missions/1?filters=past
  *   → Renvoie uniquement les missions passées
  *
- * GET /api/missions/1?filter=current&limit=5
+ * GET /api/missions/1?filters=current&limit=5
  *   → Renvoie les 5 missions en cours maximum
  *
- * GET /api/missions/1?filter=past&filter=future&limit=2
+ * GET /api/missions/1?filters=past,future&limit=2
  *   → Renvoie jusqu’à 2 missions passées et 2 futures
  */
 export const getMissionsCategorizedByTime = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { filter, limit } = req.query;
+        const { filters, limit } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
@@ -405,7 +405,6 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
 
-        // Récupération de toutes les missions associées à cet utilisateur
         const allMissions = await MissionModel.findAll({
             include: [
                 {
@@ -451,17 +450,17 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 
         let result: Record<string, any[]> = { past: [], current: [], future: [] };
 
-        if (!filter) {
+        if (!filters) {
             result = {
                 past: applyLimit(categorized.past),
                 current: applyLimit(categorized.current),
                 future: applyLimit(categorized.future)
             };
         } else {
-            const filters = Array.isArray(filter) ? filter : [filter];
-            if (filters.includes("past")) result.past = applyLimit(categorized.past);
-            if (filters.includes("current")) result.current = applyLimit(categorized.current);
-            if (filters.includes("future")) result.future = applyLimit(categorized.future);
+            const filtersArray = (filters as string).split(',').map(f => f.trim().toLowerCase());
+            if (filtersArray.includes("past")) result.past = applyLimit(categorized.past);
+            if (filtersArray.includes("current")) result.current = applyLimit(categorized.current);
+            if (filtersArray.includes("future")) result.future = applyLimit(categorized.future);
         }
 
         res.status(200).json(result);
