@@ -13,6 +13,7 @@ import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
 import MessageModel from "../models/MessageModel";
+import {Op} from "sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -333,6 +334,198 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
         res.status(200).json({ messages });
     } catch (error) {
         console.error("Erreur dans getDetailMissionById:", error); // ← Ajoute ça
+        handleHttpError(error, res);
+    }
+};
+
+/*
+ * Gestion des filtres et du tri dynamique :
+ *
+ * Query params disponibles :
+ * - from=YYYY-MM-DD        → filtre les missions dont la date de début (timeBegin) est après ou égale à cette date
+ * - to=YYYY-MM-DD          → filtre les missions dont la date de début est avant ou égale à cette date
+ * - filterByType=ID        → filtre les missions par ID de type de mission (idMissionType)
+ * - limit=N                → limite le nombre de missions retournées à N
+ *
+ * Exemples d'appels :
+ * GET /api/mission/listMissions/1?from=2025-03-25
+ *   → Missions à partir du 25 mars 2025
+ *
+ * GET /api/mission/listMissions/1?from=2025-03-25&to=2025-03-30
+ *   → Missions entre le 25 et le 30 mars 2025
+ *
+ * GET /api/mission/listMissions/1?filterByType=2
+ *    → Récupération des missions du type 2
+ *
+ * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01
+ *   → Missions du type 2, entre deux dates
+ *
+ * GET /api/mission/listMissions/1?limit=5
+ *  → Récupération des 5 dernières missions
+ *
+ *  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01&limit=5
+ *   → Missions du type 2, entre deux dates, limitées à 5
+ */
+export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+        const { from, to, filterByType, limit } = req.query;
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const where: any = {};
+
+        if (from) {
+            where.timeBegin = { [Op.gte]: new Date(from as string) };
+        }
+
+        if (to) {
+            where.timeBegin = {
+                ...(where.timeBegin || {}),
+                [Op.lte]: new Date(to as string)
+            };
+        }
+
+        if (filterByType) {
+            where.idMissionType = parseInt(filterByType as string, 10);
+        }
+
+        const missions = await MissionModel.findAll({
+            where,
+            include: [
+                {
+                    // Personne assignée à la mission
+                    model: AccountModel,
+                    attributes: ['id', 'firstName', 'lastName'],
+                    through: { attributes: [] }
+                },
+                {
+                    model: MissionTypeModel,
+                    as: 'missionType'
+                }
+            ],
+            order: [['timeBegin', 'DESC']],
+            limit: limit ? parseInt(limit as string, 10) : undefined
+        });
+
+        res.status(200).json({ missions });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
+/*
+ * Gestion du filtre par période et de la limitation du nombre de résultats :
+ *
+ * Query params disponibles :
+ * - filters=past           → renvoie uniquement les missions passées
+ * - filters=current        → renvoie uniquement les missions en cours
+ * - filters=future         → renvoie uniquement les missions futures
+ * - filters=past,future    → permet de combiner plusieurs filtres
+ * - limit=10               → limite le nombre de missions retournées par catégorie
+ *
+ * Si aucun filtre n'est spécifié, toutes les catégories sont retournées (past, current, future).
+ *
+ * Exemples d'appels :
+ * GET /api/missions/1
+ *   → Renvoie toutes les missions (passées, en cours et futures)
+ *
+ * GET /api/missions/1?filters=past
+ *   → Renvoie uniquement les missions passées
+ *
+ * GET /api/missions/1?filters=current&limit=5
+ *   → Renvoie les 5 missions en cours maximum
+ *
+ * GET /api/missions/1?filters=past,future&limit=2
+ *   → Renvoie jusqu’à 2 missions passées et 2 futures
+ */
+export const getMissionsCategorizedByTime = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+        const { filters, limit } = req.query;
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const now = new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        const allMissions = await MissionModel.findAll({
+            include: [
+                {
+                    model: AccountModel,
+                    where: { id: accountId },
+                    attributes: [],
+                    through: { attributes: [] }
+                },
+                {
+                    model: PictureModel,
+                    as: "pictures",
+                    attributes: ["id", "name", "alt", "path"]
+                },
+                {
+                    model: MissionTypeModel,
+                    as: "missionType",
+                    attributes: ["id", "shortLibel", "longLibel"]
+                }
+            ]
+        });
+
+        const categorized = {
+            past: [] as any[],
+            current: [] as any[],
+            future: [] as any[]
+        };
+
+        for (const mission of allMissions) {
+            const timeBegin = new Date(mission.timeBegin);
+            const timeEnd = mission.timeEnd ? new Date(mission.timeEnd) : null;
+
+            if (timeEnd && timeEnd < today) {
+                categorized.past.push(mission);
+            } else if (timeBegin >= tomorrow) {
+                categorized.future.push(mission);
+            } else {
+                categorized.current.push(mission);
+            }
+        }
+
+        const applyLimit = (missions: any[]) =>
+            limit ? missions.slice(0, parseInt(limit as string, 10)) : missions;
+
+        let result: Record<string, any[]> = { past: [], current: [], future: [] };
+
+        if (!filters) {
+            result = {
+                past: applyLimit(categorized.past),
+                current: applyLimit(categorized.current),
+                future: applyLimit(categorized.future)
+            };
+        } else {
+            const filtersArray = (filters as string).split(',').map(f => f.trim().toLowerCase());
+            if (filtersArray.includes("past")) result.past = applyLimit(categorized.past);
+            if (filtersArray.includes("current")) result.current = applyLimit(categorized.current);
+            if (filtersArray.includes("future")) result.future = applyLimit(categorized.future);
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
         handleHttpError(error, res);
     }
 };
