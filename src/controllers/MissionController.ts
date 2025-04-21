@@ -359,3 +359,112 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         handleHttpError(error, res);
     }
 };
+
+/*
+ * Gestion du filtre par période et de la limitation du nombre de résultats :
+ *
+ * Query params disponibles :
+ * - filters=past           → renvoie uniquement les missions passées
+ * - filters=current        → renvoie uniquement les missions en cours
+ * - filters=future         → renvoie uniquement les missions futures
+ * - filters=past,future    → permet de combiner plusieurs filtres
+ * - limit=10               → limite le nombre de missions retournées par catégorie
+ *
+ * Si aucun filtre n'est spécifié, toutes les catégories sont retournées (past, current, future).
+ *
+ * Exemples d'appels :
+ * GET /api/missions/1
+ *   → Renvoie toutes les missions (passées, en cours et futures)
+ *
+ * GET /api/missions/1?filters=past
+ *   → Renvoie uniquement les missions passées
+ *
+ * GET /api/missions/1?filters=current&limit=5
+ *   → Renvoie les 5 missions en cours maximum
+ *
+ * GET /api/missions/1?filters=past,future&limit=2
+ *   → Renvoie jusqu’à 2 missions passées et 2 futures
+ */
+export const getMissionsCategorizedByTime = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+        const { filters, limit } = req.query;
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const now = new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        const allMissions = await MissionModel.findAll({
+            include: [
+                {
+                    model: AccountModel,
+                    where: { id: accountId },
+                    attributes: [],
+                    through: { attributes: [] }
+                },
+                {
+                    model: PictureModel,
+                    as: "pictures",
+                    attributes: ["id", "name", "alt", "path"]
+                },
+                {
+                    model: MissionTypeModel,
+                    as: "missionType",
+                    attributes: ["id", "shortLibel", "longLibel"]
+                }
+            ]
+        });
+
+        const categorized = {
+            past: [] as any[],
+            current: [] as any[],
+            future: [] as any[]
+        };
+
+        for (const mission of allMissions) {
+            const timeBegin = new Date(mission.timeBegin);
+            const timeEnd = mission.timeEnd ? new Date(mission.timeEnd) : null;
+
+            if (timeEnd && timeEnd < today) {
+                categorized.past.push(mission);
+            } else if (timeBegin >= tomorrow) {
+                categorized.future.push(mission);
+            } else {
+                categorized.current.push(mission);
+            }
+        }
+
+        const applyLimit = (missions: any[]) =>
+            limit ? missions.slice(0, parseInt(limit as string, 10)) : missions;
+
+        let result: Record<string, any[]> = { past: [], current: [], future: [] };
+
+        if (!filters) {
+            result = {
+                past: applyLimit(categorized.past),
+                current: applyLimit(categorized.current),
+                future: applyLimit(categorized.future)
+            };
+        } else {
+            const filtersArray = (filters as string).split(',').map(f => f.trim().toLowerCase());
+            if (filtersArray.includes("past")) result.past = applyLimit(categorized.past);
+            if (filtersArray.includes("current")) result.current = applyLimit(categorized.current);
+            if (filtersArray.includes("future")) result.future = applyLimit(categorized.future);
+        }
+
+        res.status(200).json(result);
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
