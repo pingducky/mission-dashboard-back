@@ -8,6 +8,10 @@ import { BadRequestError } from '../Errors/BadRequestError';
 import { isValidEmail } from '../services/Email';
 import { permissionsEnum } from '../enums/permissionsEnum';
 import { NotFoundError } from '../Errors/NotFoundError';
+import RoleModel from '../models/RoleModel';
+import bcrypt from 'bcrypt';
+import AccountRoleModel from '../models/AccountRoleModel';
+import { generateRandomPassword } from '../services/AuthService';
 
 export const disableEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -99,3 +103,93 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
         handleHttpError(error, res);
     }
 };
+export const createEmployee = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        address,
+        city,
+        postalCode,
+        countryCode,
+        isGpsTrackingAllowed,
+        notificationMail,
+        notificationSms,
+        isEnabled,
+        roleIds
+      } = req.body;
+  
+      if (
+        !firstName ||
+        !lastName ||
+        !email ||
+        !phoneNumber ||
+        !address ||
+        !city ||
+        !postalCode ||
+        !countryCode ||
+        isGpsTrackingAllowed === undefined ||
+        notificationMail === undefined ||
+        notificationSms === undefined ||
+        isEnabled === undefined
+      ) {
+        throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+      }
+      if (!isValidEmail(email)) {
+        throw new BadRequestError(ErrorEnum.INVALID_EMAIL);
+      }
+  
+      const existingUser = await AccountModel.findOne({ where: { email } });
+      if (existingUser) {
+        throw new BadRequestError(ErrorEnum.EMAIL_ALREADY_USED);
+      }
+  
+      const rawPassword = generateRandomPassword();
+      const hashedPassword = await bcrypt.hash(rawPassword, 10);
+  
+      const newEmployee = await AccountModel.create({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        phoneNumber,
+        address,
+        city,
+        postalCode,
+        countryCode,
+        isGpsTrackingAllowed,
+        notificationMail,
+        notificationSms,
+        isEnabled,
+      });
+  
+      if (Array.isArray(roleIds) && roleIds.length > 0) {
+        const roles = await RoleModel.findAll({ where: { id: roleIds } });
+  
+        if (roles.length !== roleIds.length) {
+          throw new BadRequestError(ErrorEnum.ROLE_NOT_FOUND);
+        }
+  
+        const accountRoles = roleIds.map((roleId: number) => ({
+          idAccount: newEmployee.id,
+          idRole: roleId,
+        }));
+  
+        await AccountRoleModel.bulkCreate(accountRoles);
+      }
+  
+      res.status(201).json({
+        message: 'Employé créé avec succès',
+        employee: {
+          id: newEmployee.id,
+          firstName: newEmployee.firstName,
+          lastName: newEmployee.lastName,
+          email: newEmployee.email
+        },
+      });
+    } catch (error: unknown) {
+      handleHttpError(error, res);
+    }
+  };

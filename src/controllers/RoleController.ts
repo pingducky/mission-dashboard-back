@@ -8,7 +8,6 @@ import { BadRequestError } from '../Errors/BadRequestError';
 export const getRoles = async (req: Request, res: Response): Promise<void> => {
     try {
         const roles = await RoleModel.findAll();
-        console.debug("roles :", roles)
         res.status(200).json(roles);
     } catch (error: unknown) {
         handleHttpError(error, res);
