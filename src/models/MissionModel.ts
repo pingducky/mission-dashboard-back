@@ -12,6 +12,7 @@ class MissionModel extends Model {
     public estimatedEnd?: Date;
     public address!: string;
     public idMissionType!: number;
+    public pictures?: PictureModel[];
 }
 
 MissionModel.init(
@@ -75,6 +76,11 @@ MissionTypeModel.hasMany(MissionModel, {
 MessageModel.belongsTo(MissionModel, {
     foreignKey: 'idMission',
     as: 'mission'
+});
+
+MissionModel.hasMany(MessageModel, {
+    foreignKey: 'idMission',
+    as: 'messages',
 });
 
 PictureModel.belongsTo(MissionModel, {
