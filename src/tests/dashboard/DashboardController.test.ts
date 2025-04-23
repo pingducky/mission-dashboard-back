@@ -1,13 +1,9 @@
-describe('GET /dashboard/summary', () => {
-    test('doit retourner les bonnes données de résumé', async () => {});
+describe('Dashboard API', () => {
+    test.skip('Doit retourner les données du dashboard pour un utilisateur connecté', async () => {});
 
-    test('renvoie 401 si aucun token n’est fourni', async () => {});
+    test.skip('Doit retourner 0 mission si le compte n’a rien', async () => {});
 
-    test('renvoie des 0 si aucune donnée n’existe', async () => {});
+    test.skip('Doit générer une erreur, token manquant', async () => {});
 
-    test('ne compte pas une mission non terminée comme terminée', async () => {});
-
-    test('compte correctement plusieurs missions aujourd’hui', async () => {});
-
-    test('mission à 00:00:00 aujourd’hui est bien comptée', async () => {});
+    test.skip('Doit générer une erreur, token invalide', async () => {});
 });
