@@ -333,7 +333,6 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 
         res.status(200).json({ messages });
     } catch (error) {
-        console.error("Erreur dans getDetailMissionById:", error); // ← Ajoute ça
         handleHttpError(error, res);
     }
 };
