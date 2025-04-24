@@ -1,6 +1,5 @@
 import {Model, DataTypes, Sequelize} from 'sequelize';
 import sequelize from "../config/sequelize";
-import MessageModel from "./MessageModel";
 
 class AccountModel extends Model {
     public id!: number;
@@ -12,12 +11,16 @@ class AccountModel extends Model {
     public address!: string;
     public city!: string;
     public postalCode!: string;
+    public countryCode!: string;
     public hiringDate!: Date;
     public delay!: number;
     public absence!: number;
+    public isGpsTrackingAllowed!: boolean;
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
+    public isOnline!: boolean;
+    public isAdmin!: boolean;
 }
 
 AccountModel.init(
@@ -52,7 +55,7 @@ AccountModel.init(
             },
         },
         address: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING,
             allowNull: true,
         },
         city: {
@@ -60,7 +63,11 @@ AccountModel.init(
             allowNull: true,
         },
         postalCode: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+        countryCode: {
+            type: DataTypes.STRING(10),
             allowNull: true,
         },
         hiringDate: {
@@ -77,6 +84,10 @@ AccountModel.init(
             allowNull: true,
             defaultValue: 0,
         },
+        isGpsTrackingAllowed: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
         notificationMail: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
@@ -90,6 +101,10 @@ AccountModel.init(
             defaultValue: true,
         },
         isOnline: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
+        isAdmin: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },

@@ -13,7 +13,7 @@ const sequelize = new Sequelize({
   dialect: "mysql",
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || "3306"),
-  // logging: console.log, // Supprimer cette ligne pour avoir moins de logs
+  logging: console.log, // Supprimer cette ligne pour avoir moins de logs
 });
 
 export default sequelize;

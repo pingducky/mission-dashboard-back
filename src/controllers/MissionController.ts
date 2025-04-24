@@ -243,6 +243,66 @@ export const addMessageToMission = async (req: Request, res: Response): Promise<
     }
 };
 
+export const getDetailMissionById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const missionId = Number(id);
+
+        if (isNaN(missionId)) {
+            res.status(400).json({ message: ErrorEnum.INVALID_ID });
+            return;
+        }
+
+        const mission = await MissionModel.findByPk(missionId, {
+            include: [
+                {
+                    // Type de mission
+                    model: MissionTypeModel,
+                    as: 'missionType',
+                    attributes: ['shortLibel', 'longLibel']
+                },
+                {
+                    // Participants de la mission
+                    model: AccountModel,
+                    attributes: ['id', 'firstName', 'lastName', 'email'],
+                    through: { attributes: [] }
+                },
+                {
+                    // Images liées à la mission
+                    model: PictureModel,
+                    as: 'pictures',
+                    attributes: ['id', 'name', 'alt', 'path']
+                },
+                {
+                    // Messages + auteur de chaque message
+                    model: MessageModel,
+                    as: 'messages',
+                    attributes: ['id', 'message', 'createdAt'],
+                    include: [
+                        {
+                            model: AccountModel,
+                            as: 'author',
+                            attributes: ['id', 'firstName', 'lastName']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!mission) {
+            res.status(404).json({ message: MissionEnum.MISSION_NOT_FOUND });
+            return;
+        }
+
+        res.status(200).json({
+            mission: mission.toJSON()
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
+    }
+};
+
 export const getMessagesByMissionId = async (req: Request, res: Response): Promise<void> => {
     try {
         const idMission = parseInt(req.params.idMission, 10);
