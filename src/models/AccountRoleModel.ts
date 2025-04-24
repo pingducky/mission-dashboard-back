@@ -35,7 +35,7 @@ AccountRoleModel.init(
 )
 
 AccountRoleModel.belongsTo(AccountModel, { foreignKey: 'idAccount' });
-AccountRoleModel.belongsTo(RoleModel, { foreignKey: 'idRole' });
+AccountRoleModel.belongsTo(RoleModel, { foreignKey: 'idRole', as: 'role' });
 
 AccountModel.belongsToMany(RoleModel, { through: AccountRoleModel, foreignKey: 'idAccount' });
 AccountModel.hasMany(AccountRoleModel, { foreignKey: 'idAccount' });
