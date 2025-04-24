@@ -3,8 +3,6 @@ import { Op } from 'sequelize';
 import AccountModel from '../models/AccountModel';
 import MissionModel from '../models/MissionModel';
 import AccountMissionAssignModel from '../models/AccountMissionAssignModel';
-import AccountRoleModel from '../models/AccountRoleModel';
-import RoleModel from '../models/RoleModel';
 import { handleHttpError } from "../services/ErrorService";
 import { CustomRequest } from '../middleware/authMiddleware';
 import {BadRequestError} from "../Errors/BadRequestError";
@@ -18,19 +16,18 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
             throw new BadRequestError(ErrorEnum.ACCOUNT_NOT_FOUND);
         }
 
-        // Vérifie si l'utilisateur est un admin
-        const roles = await AccountRoleModel.findAll({
-            where: { idAccount: accountId },
-            include: [{
-                model: RoleModel,
-                as: "role",
-                attributes: ['shortLibel']
-            }]
-        });
+        // Récupère le compte pour vérifier s'il est Admin
+        const account = await AccountModel.findByPk(accountId);
 
-        const isAdmin = roles.some(role => (role as any).role?.shortLibel === 'ADMIN');
+        console.log(account)
 
-        // Nombre total d'employés (uniquement ceux qui sont actifs)
+        if (!account) {
+            throw new BadRequestError(ErrorEnum.ACCOUNT_NOT_FOUND);
+        }
+
+        const isAdmin = account.isAdmin;
+
+        // Nombre total d'employés actifs
         const employeeCount = await AccountModel.count({ where: { isEnabled: true } });
 
         const today = new Date();
@@ -55,15 +52,16 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
                 }
             });
         } else {
-            // Utilisateur sans privileges
+            // Récupère toutes les missions assignées à l'utilisateur connecté
             const missionLinks = await AccountMissionAssignModel.findAll({
                 where: { idAccount: accountId },
                 attributes: ['idMission']
             });
 
+            // Récupère les IDs des missions assignées à l'utilisateur
             const missionIds = missionLinks.map(link => link.idMission);
 
-            // Nombre de missions terminées (celle qui ont une date de fin pour l'utilisateur connecté)
+            // Nombre de missions terminées (celle qui ont une date de fin, parmi l'utilisateur connecté)
             missionsDone = await MissionModel.count({
                 where: {
                     id: { [Op.in]: missionIds },
