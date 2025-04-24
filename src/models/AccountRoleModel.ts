@@ -29,11 +29,10 @@ AccountRoleModel.init(
     },
     {
         sequelize,
-        tableName: 'has',
+        tableName: 'account_role',
         timestamps: false,
     }
-)
-
+);
 AccountRoleModel.belongsTo(AccountModel, { foreignKey: 'idAccount' });
 AccountRoleModel.belongsTo(RoleModel, { foreignKey: 'idRole', as: 'role' });
 
