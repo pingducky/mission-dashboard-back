@@ -5,6 +5,7 @@ import sequelize from "../../config/sequelize";
 import { ErrorEnum } from "../../enums/errorEnum";
 import EmployeRepository from "../../repositories/EmployeRepository";
 import { InternalServerError } from "../../Errors/InternalServerError";
+
 let authToken: string;
 
 beforeAll(async () => {
@@ -17,10 +18,6 @@ beforeAll(async () => {
             lastName: "Doe",
             email: "john.doe@example.com",
             password: "password123",
-            address: "123 Main St",
-            postalCode: "12345",
-            city: "Paris",
-            hiringDate: new Date("2024-04-14T12:00:00Z"),
             phoneNumber: "1234567890",
         });
 
@@ -41,6 +38,7 @@ describe("Employee API", () => {
                 lastName: "Johnson",
                 city: "New York",
                 postalCode: "10001",
+                countryCode: "FR",
                 hiringDate: "2023-10-01",
                 delay: 2,
                 absence: 1,
@@ -50,6 +48,7 @@ describe("Employee API", () => {
         expect(response.body).toHaveProperty("lastName", "Johnson");
         expect(response.body).toHaveProperty("city", "New York");
         expect(response.body).toHaveProperty("postalCode", "10001");
+        expect(response.body).toHaveProperty("countryCode", "FR");
         expect(response.body).toHaveProperty("hiringDate", "2023-10-01T00:00:00.000Z");
         expect(response.body).toHaveProperty("delay", 2);
         expect(response.body).toHaveProperty("absence", 1);

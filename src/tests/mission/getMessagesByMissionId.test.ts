@@ -30,12 +30,7 @@ beforeAll(async () => {
         firstName: "John",
         lastName: "Doe",
         email: "jondoe@example.com",
-        password: "securepassword",
-        address: "123 Main St",
-        postalCode: "12345",
-        city: "Paris",
-        hiringDate: new Date("2024-04-14T12:00:00Z"),
-        phoneNumber: "0123456789",
+        password: "securepassword"
     });
     createdAccountId = account.id;
 

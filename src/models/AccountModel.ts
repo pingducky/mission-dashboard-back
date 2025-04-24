@@ -1,4 +1,4 @@
-import {Model, DataTypes, Sequelize} from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import sequelize from "../config/sequelize";
 
 class AccountModel extends Model {

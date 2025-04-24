@@ -15,10 +15,6 @@ beforeAll(async () => {
             lastName: "Doe",
             email: "john.doe@example.com",
             password: "password123",
-            address: "123 Main St",
-            postalCode: "12345",
-            city: "Paris",
-            hiringDate: new Date("2024-04-14T12:00:00Z"),
             phoneNumber: "1234567890",
         });
 
@@ -31,6 +27,7 @@ beforeAll(async () => {
             address: "TestAddress",
             city: "TestCity",
             postalCode: "49160",
+            countryCode: "FR",
             hiringDate: "2023-10-01",
             delay: 3,
             absence: 1
@@ -68,6 +65,7 @@ describe("Employee API", () => {
             address: "TestAddress",
             city: "TestCity",
             postalCode: "49160",
+            countryCode: "FR",
             hiringDate: "2023-10-01T00:00:00.000Z",
             delay: 3,
             absence: 1,

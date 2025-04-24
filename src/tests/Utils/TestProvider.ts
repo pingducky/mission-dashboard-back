@@ -16,10 +16,6 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         lastName: "Doe",
         email: "john.doe@example.com",
         password: "password123",
-        address: "123 Main St",
-        city: "Paris",
-        postalCode: "75001",
-        hiringDate: new Date("2024-04-14T12:00:00Z"),
         phoneNumber: "1234567890",
     };
 
@@ -29,11 +25,7 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         fakeUser.lastName,
         fakeUser.email,
         fakeUser.password,
-        fakeUser.phoneNumber,
-        fakeUser.address,
-        fakeUser.city,
-        fakeUser.postalCode,
-        fakeUser.hiringDate.toISOString()
+        fakeUser.phoneNumber
     );
 
     return token;
