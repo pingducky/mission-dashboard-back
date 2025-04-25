@@ -100,4 +100,15 @@ describe("Employee API", () => {
 
         expect(response.status).toBe(401);
     });
+
+    test("Ne doit pas retourner le mot de passe d'un employé", async () => {
+        const res = await request(app)
+            .get("/api/employee/1")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(res.status).toBe(200);
+
+        expect(res.status).toBe(200);
+        expect(res.body).not.toHaveProperty("password");
+    });
 });
