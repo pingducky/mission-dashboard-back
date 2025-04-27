@@ -1,0 +1,118 @@
+name: CI/CD workflow
+
+env:
+  SERVER_USER: 'ubuntu'
+  SERVER_IP: '51.75.120.147'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdatabase
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpassword
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout le code
+        uses: actions/checkout@v3
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Créer .env.test pour les tests
+        run: echo "${{ secrets.ENV_TEST_FILE }}" > .env.test
+
+      - name: Vérifier les vulnérabilités
+        run: npm audit || true
+
+      - name: Lancer les tests
+        run: npx jest
+
+  CD:
+    needs: CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Créer .env pour la production
+        run: |
+          echo -e "${{ secrets.ENV_PROD_FILE }}" > .env
+
+      - name: Compiler le projet
+        run: npm run build
+
+      - name: Préparer l'archive à déployer
+        run: |
+          tar czf deploy.tar.gz dist package.json package-lock.json ecosystem.config.js .env
+
+      - name: Déployer sur le serveur
+        run: |
+          eval $(ssh-agent -s)
+          ssh-add - <<< "${{ secrets.SSH_KEY_VPS }}"
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+
+          ssh $SERVER_USER@$SERVER_IP "
+            sudo mkdir -p /var/www/backEnd &&
+            sudo chown ubuntu:ubuntu /var/www/backEnd
+          "
+
+          ssh $SERVER_USER@$SERVER_IP "
+          cd /var/www/backEnd &&
+          bash -c '
+          shopt -s extglob
+          rm -rf !(\"uploads\")
+          '
+          "
+
+          scp deploy.tar.gz $SERVER_USER@$SERVER_IP:/var/www/backEnd
+
+          ssh $SERVER_USER@$SERVER_IP "
+            cd /var/www/backEnd &&
+            tar xzf deploy.tar.gz &&
+            rm deploy.tar.gz &&
+
+            # Vérifier si uploads existe, sinon le créer
+            [ -d uploads ] || mkdir uploads
+
+            # créer le fichier .env ici
+            echo '${{ secrets.ENV_PROD_FILE }}' | tr '\r' '\n' > .env &&
+
+            npm install --omit=dev &&
+            pm2 startOrRestart ecosystem.config.js --env production &&
+            pm2 save
+          "

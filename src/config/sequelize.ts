@@ -6,14 +6,15 @@ dotenv.config({
   path: process.env.NODE_ENV === "test" ? ".env.test" : ".env.development",
 });
 
-const sequelize = new Sequelize({
-  database: process.env.DB_DATABASE,
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  dialect: "mysql",
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || "3306"),
-  logging: console.log, // Supprimer cette ligne pour avoir moins de logs
-});
-
+const sequelize = new Sequelize(
+    process.env.DB_NAME!,
+    process.env.DB_USER!,
+    process.env.DB_PASSWORD!,
+    {
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || "3306"),
+      dialect: "mysql",
+      logging: console.log,
+    }
+);
 export default sequelize;

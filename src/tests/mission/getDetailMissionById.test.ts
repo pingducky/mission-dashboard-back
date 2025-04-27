@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../../index";
+import app from '../../app';
 import MissionModel from '../../models/MissionModel';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { generateAuthTokenForTest } from "../Utils/TestProvider";
@@ -9,10 +9,8 @@ import { ErrorEnum } from "../../enums/errorEnum";
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import AccountModel from '../../models/AccountModel';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
-import PictureModel from '../../models/PictureModel';
 import MessageModel from '../../models/MessageModel';
 import path from "path";
-import fs from "fs";
 
 let authToken: string;
 let missionId: number;

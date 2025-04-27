@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from '../../config/sequelize';
 import { resetDatabase } from '../../utils/databaseUtils';
-import app from '../..';
+import app from '../../app';
 import path from 'path';
 import fs from 'fs';
 import MissionTypeModel from '../../models/MissionTypeModel';

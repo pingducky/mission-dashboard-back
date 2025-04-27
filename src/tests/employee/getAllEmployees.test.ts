@@ -1,6 +1,6 @@
 import request from "supertest";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
+import app from '../../app';
 import sequelize from "../../config/sequelize";
 import AccountModel from "../../models/AccountModel";
 import TokenModel from "../../models/TokenModel";
