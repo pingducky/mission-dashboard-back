@@ -43,7 +43,14 @@ export const getAllEmployees = async (req: Request, res: Response): Promise<void
     try {
         const filter = req.query.status as 'all' | 'active' | 'inactive' | 'online' | undefined;
         const employees = await EmployeRepository.getAll(filter);
-        res.status(200).json(employees);
+
+        const safeEmployees = employees.map(employee => {
+            const { password, ...safeData } = employee.get({ plain: true });
+            return safeData;
+        });
+
+        res.status(200).json(safeEmployees);
+        return;
     } catch (error: unknown) {
         handleHttpError(error, res);
     }
@@ -64,7 +71,8 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
             throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
         }
 
-        res.status(200).json(employee);
+        const { password, ...safeEmployee } = employee.get({ plain: true });
+        res.status(200).json(safeEmployee);
         return;
     } catch (error: unknown) {
         handleHttpError(error, res);
