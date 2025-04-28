@@ -19,8 +19,6 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         // Récupère le compte pour vérifier s'il est Admin
         const account = await AccountModel.findByPk(accountId);
 
-        console.log(account)
-
         if (!account) {
             throw new BadRequestError(ErrorEnum.ACCOUNT_NOT_FOUND);
         }
