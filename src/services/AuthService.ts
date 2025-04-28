@@ -10,7 +10,7 @@ const JWT_EXPIRES_IN = '1h';
 class AuthService {
   public static async register(firstName: string, lastName: string, email: string, password: string, phoneNumber: string): Promise<string> {
     const existingUser = await AccountModel.findOne({ where: { email } });
-    
+
     if (existingUser) {
       throw new BadRequestError(ErrorEnum.EMAIL_ALREADY_USED);
     }

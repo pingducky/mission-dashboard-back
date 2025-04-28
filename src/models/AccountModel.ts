@@ -12,12 +12,15 @@ class AccountModel extends Model {
     public city!: string;
     public postalCode!: string;
     public countryCode!: string;
+    public hiringDate!: Date;
+    public delay!: number;
+    public absence!: number;
     public isGpsTrackingAllowed!: boolean;
     public notificationMail!: boolean;
     public notificationSms!: boolean;
     public isEnabled!: boolean;
     public isOnline!: boolean;
-    public isAdmin!: boolean; 
+    public isAdmin!: boolean;
 }
 
 AccountModel.init(
@@ -66,6 +69,20 @@ AccountModel.init(
         countryCode: {
             type: DataTypes.STRING(10),
             allowNull: true,
+        },
+        hiringDate: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        delay: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: 0,
+        },
+        absence: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: 0,
         },
         isGpsTrackingAllowed: {
             type: DataTypes.BOOLEAN,
