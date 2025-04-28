@@ -26,7 +26,12 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         const isAdmin = account.isAdmin;
 
         // Nombre total d'employés actifs
-        const employeeCount = await AccountModel.count({ where: { isEnabled: true } });
+        const employeeCount = await AccountModel.count({
+            where: {
+                isEnabled: true,
+                isAdmin: false,
+            },
+        });
 
         const today = new Date();
         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -56,22 +61,33 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
                 attributes: ['idMission']
             });
 
-            // Récupère les IDs des missions assignées à l'utilisateur
+            // Liste des IDs de mission
             const missionIds = missionLinks.map(link => link.idMission);
 
-            // Nombre de missions terminées (celle qui ont une date de fin, parmi l'utilisateur connecté)
+            // Nombre de missions terminées de CET utilisateur
             missionsDoneCount = await MissionModel.count({
                 where: {
-                    id: { [Op.in]: missionIds },
-                    timeEnd: { [Op.not]: null }
+                    id: {
+                        [Op.in]: missionIds,
+                    },
+                    timeEnd: {
+                        [Op.not]: null,
+                    },
                 }
             });
 
-            // Compte les missions prévues pour aujourd’hui (parmi l'utilisateur connecté)
+            // Nombre de missions d'aujourd'hui de CET utilisateur
             missionsTodayCount = await MissionModel.count({
                 where: {
-                    id: { [Op.in]: missionIds },
-                    timeBegin: { [Op.between]: [startOfDay, endOfDay] }
+                    id: {
+                        [Op.in]: missionIds,
+                    },
+                    timeBegin: {
+                        [Op.between]: [startOfDay, endOfDay],
+                    },
+                    timeEnd: {
+                        [Op.is]: null,
+                    },
                 }
             });
         }
