@@ -62,7 +62,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             rejectedUploadFiles = rejectedFiles;
             accepedUploadedFiles = filesUploaded;
             const pictureRecords = filesUploaded.map(filePath => ({
-                name: filePath.split("\\").pop(),
+                name: path.basename(filePath),
                 alt: "Image de la mission",
                 path: filePath,
                 idMission: newMission.id

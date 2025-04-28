@@ -1,5 +1,8 @@
 import * as dotenv from 'dotenv';
-dotenv.config();
+
+// Définir dynamiquement quel .env charger
+const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';
+dotenv.config({ path: envFile });
 
 import app from './app';
 
