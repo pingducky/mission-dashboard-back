@@ -172,5 +172,16 @@ describe("Employee API", () => {
             })
         ]);
     });
-    
+
+    test("Ne doit jamais retourner le mot de passe des employés", async () => {
+        const res = await request(app)
+            .get("/api/employee")
+            .set("Authorization", `Bearer ${authToken}`);
+
+        expect(res.status).toBe(200);
+
+        res.body.forEach((employee: any) => {
+            expect(employee).not.toHaveProperty("password");
+        });
+    });
 });
