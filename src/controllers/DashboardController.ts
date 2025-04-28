@@ -32,19 +32,19 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         const startOfDay = new Date(today.setHours(0, 0, 0, 0));
         const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-        let missionsDone: number;
-        let missionsToday: number;
+        let missionsDoneCount: number;
+        let missionsTodayCount: number;
 
         if (isAdmin) {
             // Nombre de missions terminées (celle qui ont une date de fin, parmi tous les utilisateurs)
-            missionsDone = await MissionModel.count({
+            missionsDoneCount = await MissionModel.count({
                 where: {
                     timeEnd: { [Op.not]: null }
                 }
             });
 
             // Compte les missions prévues pour aujourd’hui (parmi tous les utilisateurs)
-            missionsToday = await MissionModel.count({
+            missionsTodayCount = await MissionModel.count({
                 where: {
                     timeBegin: { [Op.between]: [startOfDay, endOfDay] }
                 }
@@ -60,7 +60,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
             const missionIds = missionLinks.map(link => link.idMission);
 
             // Nombre de missions terminées (celle qui ont une date de fin, parmi l'utilisateur connecté)
-            missionsDone = await MissionModel.count({
+            missionsDoneCount = await MissionModel.count({
                 where: {
                     id: { [Op.in]: missionIds },
                     timeEnd: { [Op.not]: null }
@@ -68,7 +68,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
             });
 
             // Compte les missions prévues pour aujourd’hui (parmi l'utilisateur connecté)
-            missionsToday = await MissionModel.count({
+            missionsTodayCount = await MissionModel.count({
                 where: {
                     id: { [Op.in]: missionIds },
                     timeBegin: { [Op.between]: [startOfDay, endOfDay] }
@@ -78,8 +78,8 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
 
         res.json({
             employeeCount,
-            missionsDone,
-            missionsToday,
+            missionsDoneCount,
+            missionsTodayCount,
             workingTimeToday: "8h30"
         });
     } catch (error: unknown) {
