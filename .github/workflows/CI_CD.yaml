@@ -3,7 +3,7 @@ name: CI/CD workflow
 on:
   push:
     branches:
-      - main
+      - Ajout-CI/CD
 
 jobs:
   CI:
@@ -64,7 +64,7 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Créer .env pour la production
+      - name: Créer .env.production
         run: |
           echo -e "${{ secrets.ENV_PROD_FILE }}" > .env.production
 
