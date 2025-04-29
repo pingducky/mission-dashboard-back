@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';
 dotenv.config({ path: envFile });
 
+// Permet de charger les variables d'environnement avant d'importer app, évite les erreurs de variables manquantes côté serveur
 import app from './app';
 
 const port = process.env.NODE_ENV === 'test' ? 0 : Number(process.env.PORT) || 3000;
