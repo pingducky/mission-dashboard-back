@@ -147,7 +147,7 @@ describe("Employee API", () => {
         ]);
     });
 
-    test.skip("Doit récupérer tous les employés avec un filtre invalide", async () => {
+    test("Doit récupérer tous les employés avec un filtre invalide", async () => {
         const res = await request(app)
             .get("/api/employee?status=invalidFilter")
             .set("Authorization", `Bearer ${authToken}`);
