@@ -18,7 +18,7 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
         const { user } = req as CustomRequest;
 
         if (!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))) {
-          throw new BadRequestError(ErrorEnum.UNAUTHORIZED); // Lance l'exception ici
+          throw new BadRequestError(ErrorEnum.UNAUTHORIZED);
       }
 
         const id = parseInt(req.params.id, 10);
