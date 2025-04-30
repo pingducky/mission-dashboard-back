@@ -48,7 +48,7 @@ export const activateEmployee = async (req: Request, res: Response): Promise<voi
       const employee = await AccountModel.findByPk(id);
       
       if (!employee) {
-        throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND); // Lance l'exception ici
+        throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
       }
       
       await employee.update({ archivedAt: null });
