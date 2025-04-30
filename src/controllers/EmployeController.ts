@@ -12,13 +12,14 @@ import RoleModel from '../models/RoleModel';
 import bcrypt from 'bcrypt';
 import AccountRoleModel from '../models/AccountRoleModel';
 import { generateRandomPassword } from '../services/AuthService';
+import { UnauthorizedError } from '../Errors/UnauthorizedError';
 
 export const disableEmployee = async (req: Request, res: Response): Promise<void> => {
     try {
         const { user } = req as CustomRequest;
 
         if (!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))) {
-          throw new BadRequestError(ErrorEnum.UNAUTHORIZED);
+          throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
       }
 
         const id = parseInt(req.params.id, 10);
@@ -40,7 +41,7 @@ export const activateEmployee = async (req: Request, res: Response): Promise<voi
       const { user } = req as CustomRequest;
 
       if (!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))) {
-        throw new BadRequestError(ErrorEnum.UNAUTHORIZED);
+        throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
       }
 
       const id = parseInt(req.params.id, 10);

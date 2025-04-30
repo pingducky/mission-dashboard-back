@@ -53,7 +53,7 @@ describe("PUT /employee/:id/disable", () => {
         .put("/api/employee/9999/disable")
         .set("Authorization", `Bearer ${authToken}`);
 
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe(ErrorEnum.ACCOUNT_NOT_FOUND);
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe(ErrorEnum.ACCOUNT_NOT_FOUND);
     });
 });
