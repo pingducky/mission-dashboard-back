@@ -11,6 +11,9 @@ class MissionModel extends Model {
     public timeEnd?: Date;
     public estimatedEnd?: Date;
     public address!: string;
+    public city!: string;
+    public postalCode!: string;
+    public countryCode!: string;
     public idMissionType!: number;
     public pictures?: PictureModel[];
 }
@@ -37,6 +40,18 @@ MissionModel.init(
         address: {
             type: DataTypes.TEXT,
             allowNull: false,
+        },
+        city: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
+        postalCode: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+        countryCode: {
+            type: DataTypes.STRING(10),
+            allowNull: true,
         },
         timeEnd: {
             type: DataTypes.DATE,
