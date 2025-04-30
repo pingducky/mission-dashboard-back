@@ -22,7 +22,6 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
             return;
         }
 
-
         const id = parseInt(req.params.id, 10);
         const employee = await AccountModel.findByPk(id);
         
@@ -46,7 +45,6 @@ export const activateEmployee = async (req: Request, res: Response): Promise<voi
           res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
           return;
       }
-
 
       const id = parseInt(req.params.id, 10);
       const employee = await AccountModel.findByPk(id);
