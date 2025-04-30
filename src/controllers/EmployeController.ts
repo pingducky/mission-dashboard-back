@@ -17,18 +17,16 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
     try {
         const { user } = req as CustomRequest;
 
-        if(!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))){
-            res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
-            return;
-        }
+        if (!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))) {
+          throw new BadRequestError(ErrorEnum.UNAUTHORIZED); // Lance l'exception ici
+      }
 
         const id = parseInt(req.params.id, 10);
         const employee = await AccountModel.findByPk(id);
         
         if (!employee) {
-            res.status(400).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
-            return;
-        }
+          throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+      }
         
         await employee.update({ archivedAt: new Date() });
         res.status(204).send();
@@ -41,17 +39,15 @@ export const activateEmployee = async (req: Request, res: Response): Promise<voi
   try {
       const { user } = req as CustomRequest;
 
-      if(!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))){
-          res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
-          return;
+      if (!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))) {
+        throw new BadRequestError(ErrorEnum.UNAUTHORIZED);
       }
 
       const id = parseInt(req.params.id, 10);
       const employee = await AccountModel.findByPk(id);
       
       if (!employee) {
-          res.status(400).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
-          return;
+        throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND); // Lance l'exception ici
       }
       
       await employee.update({ archivedAt: null });
