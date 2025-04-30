@@ -65,13 +65,15 @@ export const getEmployeeById = async (req: Request, res: Response): Promise<void
             throw new BadRequestError(ErrorEnum.ACCOUNT_NOT_FOUND)
         }
 
-        const employee = await EmployeRepository.getById(numericId);
+        const [employee, roles] = await EmployeRepository.getById(numericId);
 
         if (!employee) {
             throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
         }
 
-        const { password, ...safeEmployee } = employee.get({ plain: true });
+        let { password, ...safeEmployee } = employee.get({ plain: true });
+        safeEmployee['roles'] = roles;
+
         res.status(200).json(safeEmployee);
         return;
     } catch (error: unknown) {

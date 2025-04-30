@@ -74,7 +74,7 @@ router.get("/:idMission/message", auth, getMessagesByMissionId)
 
 router.post('/:idMission/message', auth, addMessageToMission);
 
-router.get("/listMissions/:id", auth, auth, getListMissionsByAccountId);
+router.get("/listMissions/:id", auth, getListMissionsByAccountId);
 
 router.get("/missionCategorized/:id", auth, getMissionsCategorizedByTime);
 

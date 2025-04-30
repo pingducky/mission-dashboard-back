@@ -32,8 +32,24 @@ class EmployeRepository {
         return await AccountModel.findAll({ where });
     }
 
-    static async getById(id: number) {
-        return await AccountModel.findByPk(id);
+    static async getById(id: number): Promise<[AccountModel, RoleModel]> {
+        const employee = await AccountModel.findByPk(id, {
+            include: [{
+                model: AccountRoleModel,
+                include: [{
+                    model: RoleModel,
+                    attributes: ['id', 'shortLibel', 'longLibel']
+                }]
+            }],
+        });
+
+        if (!employee) {
+            throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+        }
+
+        const roles = employee.getDataValue("AccountRoleModels").map((accountRole: any) => accountRole.RoleModel.dataValues);
+
+        return [employee, roles];
     }
 
     static async update(id: number, updateData: object) {
