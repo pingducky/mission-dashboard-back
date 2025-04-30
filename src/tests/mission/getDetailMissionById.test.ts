@@ -44,7 +44,7 @@ beforeAll(async () => {
         email: "2john.doe@example.com",
         password: "hashedpassword",
         phoneNumber: "0600000000",
-        isEnabled: true
+        archivedAt: null,
     });
 
     await AccountMissionAssignModel.create({
@@ -77,7 +77,7 @@ describe("getDetailMissionById", () => {
             email: "jean.dupont@example.com",
             password: "securepassword",
             phoneNumber: "0600000000",
-            isEnabled: true
+            archivedAt: null,
         });
 
         const requestBuilder = request(app)

@@ -38,6 +38,31 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
     }
 };
 
+export const activateEmployee = async (req: Request, res: Response): Promise<void> => {
+  try {
+      const { user } = req as CustomRequest;
+
+      if(!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))){
+          res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
+          return;
+      }
+
+
+      const id = parseInt(req.params.id, 10);
+      const employee = await AccountModel.findByPk(id);
+      
+      if (!employee) {
+          res.status(400).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
+          return;
+      }
+      
+      await employee.update({ archivedAt: null });
+      res.status(204).send();
+  } catch (error: unknown) {
+      handleHttpError(error, res);
+  }
+};
+
 
 export const getAllEmployees = async (req: Request, res: Response): Promise<void> => {
     try {

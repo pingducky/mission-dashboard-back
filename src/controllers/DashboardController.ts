@@ -28,7 +28,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         // Nombre total d'employés actifs
         const employeeCount = await AccountModel.count({
             where: {
-                isEnabled: true,
+                archivedAt: null,
                 isAdmin: false,
             },
         });
