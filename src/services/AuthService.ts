@@ -22,7 +22,7 @@ class AuthService {
       lastName,
       email,
       password: hashedPassword,
-      isEnabled: true,
+      archivedAt: null,
       phoneNumber: phoneNumber,
       isAdmin: true,
     });

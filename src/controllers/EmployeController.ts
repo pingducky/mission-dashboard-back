@@ -31,7 +31,7 @@ export const disableEmployee = async (req: Request, res: Response): Promise<void
             return;
         }
         
-        await employee.update({ isEnabled: false });
+        await employee.update({ archivedAt: new Date() });
         res.status(204).send();
     } catch (error: unknown) {
         handleHttpError(error, res);
@@ -125,7 +125,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed,
         notificationMail,
         notificationSms,
-        isEnabled,
+        archivedAt,
         roleIds
       } = req.body;
   
@@ -141,7 +141,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed === undefined ||
         notificationMail === undefined ||
         notificationSms === undefined ||
-        isEnabled === undefined
+        archivedAt === undefined
       ) {
         throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
       }
@@ -170,7 +170,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed,
         notificationMail,
         notificationSms,
-        isEnabled,
+        archivedAt,
       });
   
       if (Array.isArray(roleIds) && roleIds.length > 0) {
