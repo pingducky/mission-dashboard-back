@@ -78,7 +78,6 @@ router.put("/:id", auth, updateMission)
 
 router.delete('/:id', auth, deleteMission);
 
-
 router.get("/:idMission/message", auth, getMessagesByMissionId)
 
 router.post('/:idMission/message', auth, addMessageToMission);
