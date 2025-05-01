@@ -9,6 +9,7 @@ import {
     getDetailMissionById,
     getMissionsCategorizedByTime,
     updateMission,
+    getAllMissionsTypes,
 } from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
@@ -77,7 +78,6 @@ router.put("/:id", auth, updateMission)
 
 router.delete('/:id', auth, deleteMission);
 
-router.get('/:id', auth, getDetailMissionById);
 
 router.get("/:idMission/message", auth, getMessagesByMissionId)
 
@@ -86,5 +86,10 @@ router.post('/:idMission/message', auth, addMessageToMission);
 router.get("/listMissions/:id", auth, getListMissionsByAccountId);
 
 router.get("/missionCategorized/:id", auth, getMissionsCategorizedByTime);
+
+router.get("/type", auth, getAllMissionsTypes);
+
+router.get('/:id', auth, getDetailMissionById);
+
 
 module.exports = router;

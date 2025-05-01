@@ -537,3 +537,13 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
         handleHttpError(error, res);
     }
 };
+
+export const getAllMissionsTypes = async (req: Request, res: Response): Promise<void> => {
+    try {
+        console.debug("s*,sssds");
+        const missionTypes = await MissionTypeModel.findAll();
+        res.status(200).json({ missionTypes });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
