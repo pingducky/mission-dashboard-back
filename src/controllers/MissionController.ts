@@ -18,12 +18,12 @@ import path from "path";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { description, timeBegin, estimatedEnd, address, timeEnd, missionTypeId, accountAssignId } = req.body;
+        const { description, timeBegin, estimatedEnd, address, city, postalCode, countryCode, timeEnd, missionTypeId, accountAssignId } = req.body;
         let accepedUploadedFiles: string[] = [];
         let rejectedUploadFiles: string[] = [];
 
         // Vérification des champs obligatoires
-        if (!description || !timeBegin || !address || !missionTypeId) {
+        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId) {
             throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS)
         }
 
@@ -40,6 +40,9 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             timeEnd,
             estimatedEnd,
             address,
+            city,
+            postalCode,
+            countryCode,
             idMissionType: missionTypeId
         });
 
@@ -472,6 +475,12 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
                     model: AccountModel,
                     where: { id: accountId },
                     attributes: [],
+                    through: { attributes: [] }
+                },
+                {
+                    // Personnes assignées à la mission
+                    model: AccountModel,
+                    attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] }
                 },
                 {
