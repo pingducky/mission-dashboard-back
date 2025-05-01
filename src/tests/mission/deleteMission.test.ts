@@ -31,6 +31,9 @@ beforeAll(async () => {
             description: 'Mission à supprimer',
             timeBegin: '2025-02-17T10:00:00Z',
             address: 'Adresse',
+            city: "city",
+            postalCode: "75000",
+            countryCode: "FR",
             missionTypeId: 1
         })
         .set('Authorization', `Bearer ${authToken}`);
@@ -103,6 +106,9 @@ describe('Suppression de mission', () => {
             .field("description", "Mission à supprimer")
             .field("timeBegin", "2025-02-17T10:00:00Z")
             .field("address", "Adresse complète")
+            .field("city", "Paris")
+            .field("postalCode", "75000")
+            .field("countryCode", "FR")
             .field("missionTypeId", 1)
             .set("Authorization", `Bearer ${authToken}`);
 

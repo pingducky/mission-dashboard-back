@@ -9,10 +9,8 @@ import { ErrorEnum } from "../../enums/errorEnum";
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import AccountModel from '../../models/AccountModel';
 import AccountMissionAssignModel from '../../models/AccountMissionAssignModel';
-import PictureModel from '../../models/PictureModel';
 import MessageModel from '../../models/MessageModel';
 import path from "path";
-import fs from "fs";
 
 let authToken: string;
 let missionId: number;
@@ -85,6 +83,9 @@ describe("getDetailMissionById", () => {
             .field("description", "Mission test complète")
             .field("timeBegin", "2025-03-01T08:00:00Z")
             .field("address", "Test adresse")
+            .field("city", "Test ville")
+            .field("postalCode", "75000")
+            .field("countryCode", "FR")
             .field("missionTypeId", missionType.id)
             .field("accountAssignId", account.id) // assignation via champ
             .set("Authorization", `Bearer ${authToken}`);
@@ -115,6 +116,9 @@ describe("getDetailMissionById", () => {
             description: "Mission test complète",
             timeBegin: "2025-03-01T08:00:00.000Z",
             address: "Test adresse",
+            city: "Test ville",
+            postalCode: "75000",
+            countryCode: "FR",
             idMissionType: missionType.id,
             missionType: {
                 shortLibel: "Test",
