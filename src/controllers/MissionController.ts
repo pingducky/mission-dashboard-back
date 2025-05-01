@@ -13,7 +13,7 @@ import { BadRequestError } from "../Errors/BadRequestError";
 import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
 import MessageModel from "../models/MessageModel";
-import {Op} from "sequelize";
+import {Op, Sequelize} from "sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -341,15 +341,25 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 };
 
 /*
- * Gestion des filtres et du tri dynamique :
+ * Récupération des missions d’un employé avec filtres dynamiques
+ *
+ * Route :
+ *   GET http://localhost:3000/api/mission/listMissions/:idEmployee
  *
  * Query params disponibles :
- * - from=YYYY-MM-DD        → filtre les missions dont la date de début (timeBegin) est après ou égale à cette date
- * - to=YYYY-MM-DD          → filtre les missions dont la date de début est avant ou égale à cette date
- * - filterByType=ID        → filtre les missions par ID de type de mission (idMissionType)
- * - limit=N                → limite le nombre de missions retournées à N
+ * - from=YYYY-MM-DD        → Filtre les missions dont la date de début (timeBegin) est >= à cette date
+ * - to=YYYY-MM-DD          → Filtre les missions dont la date de début (timeBegin) est <= à cette date
+ * - filterByType=ID        → Filtre les missions par identifiant de type de mission (idMissionType)
+ * - limit=N                → Limite le nombre de missions retournées à N
+ * - status=[actives|passees|prevues|annulees|toutes]
+ *                          → Filtre les missions selon leur statut :
+ *                              - actives : timeBegin ≤ now && (timeEnd ≥ now || timeEnd is null)
+ *                              - passees : timeEnd < now
+ *                              - prevues : timeBegin > now
+ *                              - annulees : timeEnd < timeBegin
+ *                              - toutes : aucun filtre appliqué (valeur par défaut)
  *
- * Exemples d'appels :
+ * Exemples d’appels :
  * GET /api/mission/listMissions/1?from=2025-03-25
  *   → Missions à partir du 25 mars 2025
  *
@@ -357,21 +367,27 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  *   → Missions entre le 25 et le 30 mars 2025
  *
  * GET /api/mission/listMissions/1?filterByType=2
- *    → Récupération des missions du type 2
+ *   → Missions de type 2
  *
  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01
- *   → Missions du type 2, entre deux dates
+ *   → Missions de type 2 entre deux dates
  *
  * GET /api/mission/listMissions/1?limit=5
- *  → Récupération des 5 dernières missions
+ *   → 5 dernières missions (ordonnées par date décroissante)
  *
- *  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01&limit=5
- *   → Missions du type 2, entre deux dates, limitées à 5
+ * GET /api/mission/listMissions/1?status=actives
+ *   → Missions actuellement actives
+ *
+ * GET /api/mission/listMissions/1?status=prevues&limit=3
+ *   → Prochaines missions à venir, limitées à 3
+ *
+ * GET /api/mission/listMissions/1?status=passees&from=2025-01-01
+ *   → Missions passées à partir du 1er janvier 2025
  */
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { from, to, filterByType, limit } = req.query;
+        const { from, to, filterByType, limit, status } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
@@ -384,6 +400,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
 
         const where: any = {};
 
+        // Filtres temporels manuels
         if (from) {
             where.timeBegin = { [Op.gte]: new Date(from as string) };
         }
@@ -391,19 +408,51 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         if (to) {
             where.timeBegin = {
                 ...(where.timeBegin || {}),
-                [Op.lte]: new Date(to as string)
+                [Op.lte]: new Date(to as string),
             };
         }
 
+        // Filtre par type
         if (filterByType) {
             where.idMissionType = parseInt(filterByType as string, 10);
+        }
+
+        // Logique des statuts
+        const now = new Date();
+
+        switch (status) {
+            case 'actives':
+                where.timeBegin = { [Op.lte]: now };
+                where.timeEnd = {
+                    [Op.or]: {
+                        [Op.gte]: now,
+                        [Op.is]: null
+                    }
+                };
+                break;
+
+            case 'annulees':
+                where.isCanceled = true;
+                break;
+
+            case 'passees':
+                where.timeEnd = { [Op.lt]: now };
+                break;
+
+            case 'prevues':
+                where.timeBegin = { [Op.gt]: now };
+                break;
+
+            case 'toutes':
+            default:
+                // aucun filtre de statut appliqué
+                break;
         }
 
         const missions = await MissionModel.findAll({
             where,
             include: [
                 {
-                    // Personne assignée à la mission
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] }
@@ -418,6 +467,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         });
 
         res.status(200).json({ missions });
+
     } catch (error) {
         handleHttpError(error, res);
     }

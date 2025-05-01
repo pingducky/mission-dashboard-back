@@ -237,4 +237,114 @@ describe('Liste des missions filtrées', () => {
         expect(response.status).toBe(200);
         expect(missions).toEqual([]);
     });
+
+
+
+
+
+
+
+
+
+    test('Filtre par statut: actives', async () => {
+        await AccountMissionAssignModel.destroy({ where: {} });
+        await MissionModel.destroy({ where: {} });
+
+        const now = new Date();
+        const mission = await MissionModel.create({
+            description: "Mission active",
+            timeBegin: new Date(now.getTime() - 60 * 60 * 1000), // 1h avant
+            timeEnd: new Date(now.getTime() + 60 * 60 * 1000),   // 1h après
+            address: "Adresse active",
+            idMissionType: 1
+        });
+
+        await AccountMissionAssignModel.create({ idAccount: accountId, idMission: mission.id });
+
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}?status=actives`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
+        expect(missions[0].description).toBe("Mission active");
+    });
+
+
+    test('Filtre par statut: prévues', async () => {
+        await AccountMissionAssignModel.destroy({ where: {} });
+        await MissionModel.destroy({ where: {} });
+
+        const mission = await MissionModel.create({
+            description: "Mission prévue",
+            timeBegin: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            address: "Adresse prévue",
+            idMissionType: 1
+        });
+
+        await AccountMissionAssignModel.create({ idAccount: accountId, idMission: mission.id });
+
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}?status=prevues`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
+        expect(missions[0].description).toBe("Mission prévue");
+    });
+
+    test('Filtre par statut: passées', async () => {
+        await AccountMissionAssignModel.destroy({ where: {} });
+        await MissionModel.destroy({ where: {} });
+
+        const mission = await MissionModel.create({
+            description: "Mission passée",
+            timeBegin: new Date("2025-01-01T10:00:00Z"),
+            timeEnd: new Date("2025-01-02T10:00:00Z"),
+            address: "Adresse passée",
+            idMissionType: 1
+        });
+
+        await AccountMissionAssignModel.create({ idAccount: accountId, idMission: mission.id });
+
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}?status=passees`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
+        expect(missions[0].description).toBe("Mission passée");
+    });
+
+    test('Filtre par statut: annulées', async () => {
+        await AccountMissionAssignModel.destroy({ where: {} });
+        await MissionModel.destroy({ where: {} });
+
+        const now = new Date();
+        const mission = await MissionModel.create({
+            description: "Mission annulée",
+            timeBegin: new Date(now.getTime() + 2 * 60 * 60 * 1000),
+            timeEnd: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+            address: "Adresse annulée",
+            idMissionType: 1
+        });
+
+        await AccountMissionAssignModel.create({ idAccount: accountId, idMission: mission.id });
+
+        const response = await request(app)
+            .get(`/api/mission/listMissions/${accountId}?status=annulees`)
+            .set("Authorization", `Bearer ${authToken}`);
+
+        const missions = response.body.missions as MissionResponse[];
+
+        expect(response.status).toBe(200);
+        expect(missions.length).toBe(1);
+        expect(missions[0].description).toBe("Mission annulée");
+    });
 });
