@@ -1,6 +1,15 @@
 import { Router } from "express";
 import upload from "../services/UploadService";
-import {createMission,  addMessageToMission, deleteMission, getMessagesByMissionId, getListMissionsByAccountId, getDetailMissionById, getMissionsCategorizedByTime, updateMission} from "../controllers/MissionController";
+import {
+    createMission,
+    addMessageToMission,
+    deleteMission,
+    getMessagesByMissionId,
+    getListMissionsByAccountId,
+    getDetailMissionById,
+    getMissionsCategorizedByTime,
+    updateMission,
+} from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
