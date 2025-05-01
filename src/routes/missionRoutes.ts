@@ -9,7 +9,6 @@ import {
     getDetailMissionById,
     getMissionsCategorizedByTime,
     updateMission,
-    getAllMissionsTypes
 } from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
@@ -73,8 +72,6 @@ const router = Router();
  *         description: Erreur serveur lors de la création de la mission
  */
 router.post("/", auth, upload, createMission);
-
-router.get("/missionsTypes", auth, getAllMissionsTypes);
 
 router.put("/:id", auth, updateMission)
 
