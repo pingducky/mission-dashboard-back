@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   CI:
@@ -48,6 +51,7 @@ jobs:
         run: npx jest
 
   CD:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: CI
     runs-on: ubuntu-latest
 
