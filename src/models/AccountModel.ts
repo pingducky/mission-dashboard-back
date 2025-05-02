@@ -18,7 +18,7 @@ class AccountModel extends Model {
     public isGpsTrackingAllowed!: boolean;
     public notificationMail!: boolean;
     public notificationSms!: boolean;
-    public isEnabled!: boolean;
+    public archivedAt!: Date | null;
     public isOnline!: boolean;
     public isAdmin!: boolean;
 }
@@ -96,9 +96,10 @@ AccountModel.init(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
-        isEnabled: {
-            type: DataTypes.BOOLEAN,
-            defaultValue: true,
+        archivedAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            defaultValue: null,
         },
         isOnline: {
             type: DataTypes.BOOLEAN,
