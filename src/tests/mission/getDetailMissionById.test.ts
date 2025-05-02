@@ -87,15 +87,15 @@ describe("getDetailMissionById", () => {
             .field("postalCode", "75000")
             .field("countryCode", "FR")
             .field("missionTypeId", missionType.id)
-            .field("accountAssignId", account.id) // assignation via champ
+            .field("accountAssignIds", JSON.stringify([account.id]))
             .set("Authorization", `Bearer ${authToken}`);
 
         await requestBuilder.attach("pictures", imagePath);
         const response = await requestBuilder;
         expect(response.status).toBe(201);
 
-        const missionId = response.body.mission.id;
-        const uploadedFileName = path.basename(response.body.accepedUploadedFiles[0]);
+        const missionId = response.body.missionId;
+        const uploadedFileName = path.basename(response.body.uploadedFiles[0]);
 
         await MessageModel.create({
             idMission: missionId,

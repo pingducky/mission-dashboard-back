@@ -26,6 +26,8 @@ class AuthService {
       phoneNumber: phoneNumber,
       isAdmin: true,
     });
+
+    console.debug("new Account", newAccount)
     
     return AuthService.generateJwt(newAccount);
   }

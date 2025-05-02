@@ -17,27 +17,95 @@ import {Op} from "sequelize";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { description, timeBegin, estimatedEnd, address, city, postalCode, countryCode, timeEnd, missionTypeId, accountAssignId } = req.body;
-        let accepedUploadedFiles: string[] = [];
-        let rejectedUploadFiles: string[] = [];
+        const {
+            description,
+            timeBegin,
+            estimatedEnd,
+            address,
+            city,
+            postalCode,
+            countryCode,
+            timeEnd,
+            missionTypeId,
+            accountAssignIds
+        } = req.body;
+
+        let acceptedUploadedFiles: string[] = [];
+        let rejectedUploadFiles: Array<{ id: string, reason: string }> = [];
+
+        const assignedAccounts: any[] = [];
+        const failedAssignments: { accountId: number, reason: string }[] = [];
 
         // Vérification des champs obligatoires
-        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId) {
-            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS)
+        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        // Parse correctement accountAssignIds (string dans form-data)
+        let parsedAccountAssignIds: number[] = [];
+        if (typeof accountAssignIds === 'string') {
+            try {
+                parsedAccountAssignIds = JSON.parse(accountAssignIds);
+            } catch {
+                throw new BadRequestError('Le champ accountAssignIds doit être un tableau JSON valide.');
+            }
+        } else if (Array.isArray(accountAssignIds)) {
+            parsedAccountAssignIds = accountAssignIds;
         }
 
         // Vérification du type de mission
         const missionType = await MissionTypeModel.findByPk(missionTypeId);
         if (!missionType) {
-            throw new BadRequestError(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
+            throw new BadRequestError(MissionEnum.MISSION_TYPE_DOESNT_EXIST);
+        }
+
+        // Vérification des comptes à assigner
+        for (const accountId of parsedAccountAssignIds) {
+            const account = await AccountModel.findByPk(accountId);
+            if (!account) {
+                failedAssignments.push({ accountId, reason: "Compte inexistant" });
+                continue;
+            }
+
+            const conflictingMission = await AccountMissionAssignModel.findOne({
+                where: { idAccount: accountId },
+                include: [{
+                    model: MissionModel,
+                    as: 'mission',
+                    where: {
+                        [Op.or]: [
+                            { timeBegin: { [Op.between]: [timeBegin, timeEnd] } },
+                            { timeEnd: { [Op.between]: [timeBegin, timeEnd] } },
+                            {
+                                [Op.and]: [
+                                    { timeBegin: { [Op.lte]: timeBegin } },
+                                    { timeEnd: { [Op.gte]: timeEnd } }
+                                ]
+                            }
+                        ]
+                    }
+                }]
+            });
+
+            if (conflictingMission) {
+                failedAssignments.push({ accountId, reason: MissionEnum.CONFLIT_MISSION });
+                continue;
+            }
+
+            assignedAccounts.push(account);
+        }
+
+        // Si aucun compte assignable, on annule la création
+        if (assignedAccounts.length === 0) {
+            throw new BadRequestError(MissionEnum.BAD_ACCOUNT_ASSIGNATION)
         }
 
         // Création de la mission
         const newMission = await MissionModel.create({
             description,
             timeBegin,
-            timeEnd,
-            estimatedEnd,
+            timeEnd: timeEnd || null,
+            estimatedEnd: estimatedEnd || null,
             address,
             city,
             postalCode,
@@ -45,24 +113,23 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             idMissionType: missionTypeId
         });
 
-        // Vérification si l'account existe
-        if (accountAssignId) {
-            const accountExists = await AccountModel.findByPk(accountAssignId);
-            if (accountExists) {
-                await AccountMissionAssignModel.create({
-                    idAccount: accountAssignId,
-                    idMission: newMission.id
-                });
-            } else {
-                throw new NotFoundError(MissionEnum.USER_NOT_FOUND)
-            }
+        // Assignation des comptes valides
+        for (const account of assignedAccounts) {
+            await AccountMissionAssignModel.create({
+                idAccount: account.id,
+                idMission: newMission.id
+            });
         }
 
-        // Upload des fichiers et enregistrement des images associées
+        // Upload des fichiers
         if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-            const { filesUploaded, rejectedFiles } = await uploadFiles(req.files as Express.Multer.File[], Object.values(IMAGES_MIME_TYPE));
+            const { filesUploaded, rejectedFiles } = await uploadFiles(
+                req.files as Express.Multer.File[],
+                Object.values(IMAGES_MIME_TYPE)
+            );
             rejectedUploadFiles = rejectedFiles;
-            accepedUploadedFiles = filesUploaded;
+            acceptedUploadedFiles = filesUploaded;
+
             const pictureRecords = filesUploaded.map(filePath => ({
                 name: filePath.split("\\").pop(),
                 alt: "Image de la mission",
@@ -72,13 +139,18 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             await PictureModel.bulkCreate(pictureRecords);
         }
 
-        // Réponse avec ou sans avertissement
+        // Réponse
         res.status(201).json({
-            message: MissionEnum.MISSION_SUCCESSFULLY_CREATED,
-            mission: { ...newMission.toJSON() }, 
-            rejectedUploadFiles,
-            accepedUploadedFiles,
+            missionId: newMission.id,
+            assignedAccountIds: assignedAccounts.map(account => account.id),
+            failedAssignments: failedAssignments.map(entry => ({
+                accountId: entry.accountId,
+                reason: entry.reason
+            })),
+            uploadedFiles: acceptedUploadedFiles,
+            rejectedFiles: rejectedUploadFiles
         });
+
     } catch (error) {
         handleHttpError(error, res);
     }
@@ -144,7 +216,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         }
 
         let accepedUploadedFiles: string[] = [];
-        let rejectedUploadFiles: string[] = [];
+        let rejectedUploadFiles: Array<{id: string, reason: string}> = [];
 
         // Upload des fichiers et enregistrement des images associées
         if (req.files && Array.isArray(req.files) && req.files.length > 0) {
@@ -171,6 +243,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
 export const deleteMission = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -540,9 +613,8 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 
 export const getAllMissionsTypes = async (req: Request, res: Response): Promise<void> => {
     try {
-        console.debug("s*,sssds");
         const missionTypes = await MissionTypeModel.findAll();
-        res.status(200).json({ missionTypes });
+        res.status(200).json(missionTypes);
     } catch (error) {
         handleHttpError(error, res);
     }
