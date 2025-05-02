@@ -27,7 +27,6 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         fakeUser.password,
         fakeUser.phoneNumber
     );
-    console.debug("token : ", token)
     return token;
 };
 

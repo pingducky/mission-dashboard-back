@@ -27,8 +27,6 @@ class AuthService {
       isAdmin: true,
     });
 
-    console.debug("new Account", newAccount)
-    
     return AuthService.generateJwt(newAccount);
   }
 

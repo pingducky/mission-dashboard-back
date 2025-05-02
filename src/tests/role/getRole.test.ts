@@ -19,7 +19,6 @@ beforeEach(async () => {
     });
 
     authToken = userResponse.body.token;
-    console.log("authToken :", authToken);
 });
   
 afterAll(async () => {

@@ -119,7 +119,6 @@ describe('Suppression de mission', () => {
 
         await requestBuilder.attach("pictures", imagePath);
         const response = await requestBuilder;
-        console.debug('response', response.body)
         const missionId = response.body.missionId;
         const uploadedFileName = path.basename(response.body.uploadedFiles[0]);
         const uploadedFilePath = path.join(process.env.FILES_UPLOAD_OUTPUT, uploadedFileName);
