@@ -71,7 +71,7 @@ describe("Employee API", () => {
             absence: 1,
             notificationMail: true,
             notificationSms: false,
-            isEnabled: true,
+            archivedAt: null,
         });
 
         expect(response.body).not.toHaveProperty("password");
