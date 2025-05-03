@@ -238,14 +238,6 @@ describe('Liste des missions filtrées', () => {
         expect(missions).toEqual([]);
     });
 
-
-
-
-
-
-
-
-
     test('Filtre par statut: actives', async () => {
         await AccountMissionAssignModel.destroy({ where: {} });
         await MissionModel.destroy({ where: {} });
@@ -332,6 +324,7 @@ describe('Liste des missions filtrées', () => {
             timeBegin: new Date(now.getTime() + 2 * 60 * 60 * 1000),
             timeEnd: new Date(now.getTime() - 2 * 60 * 60 * 1000),
             address: "Adresse annulée",
+            isCanceled: true,
             idMissionType: 1
         });
 
