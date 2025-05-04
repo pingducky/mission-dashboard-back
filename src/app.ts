@@ -25,6 +25,7 @@ const permissionRoutes = require('./routes/permissionRoutes')
 const rolesRoutes = require('./routes/RoleRoutes')
 const fileRoutes = require('./routes/fileRoutes')
 const dashboardRoutes = require('./routes/dashboardRoutes')
+const WorkSessionRoutes = require('./routes/workSessionRoutes')
 
 app.use('/api/auth', authRoutes);
 app.use('/api/employee', employeeRoutes)
@@ -33,5 +34,6 @@ app.use('/api/permission', permissionRoutes)
 app.use('/api/role', rolesRoutes)
 app.use('/api/file', fileRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/workSession', WorkSessionRoutes)
 
 export default app;
