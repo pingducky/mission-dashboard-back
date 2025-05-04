@@ -1,0 +1,131 @@
+name: CI/CD workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdatabase
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpassword
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout le code
+        uses: actions/checkout@v3
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Créer .env.test pour les tests
+        run: echo "${{ secrets.ENV_TEST_FILE }}" | tr '\r' '\n' > .env.test
+
+      - name: Vérifier les vulnérabilités
+        run: npm audit || true
+
+      - name: Lancer les tests
+        run: npx jest
+
+  CD:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Créer .env.production
+        run: |
+          echo -e "${{ secrets.ENV_PROD_FILE }}" > .env.production
+
+      - name: Compiler le projet
+        run: npm run build
+
+      - name: Préparer l'archive à déployer
+        run: |
+          tar czf deploy.tar.gz dist package.json package-lock.json ecosystem.config.js .env.production
+
+      - name: Déployer sur le serveur
+        run: |
+          SERVER_USER=${{ secrets.SERVER_USER }}
+          SERVER_IP=${{ secrets.SERVER_IP }}
+          
+          eval $(ssh-agent -s)
+          ssh-add - <<< "${{ secrets.SSH_KEY_VPS }}"
+          # S'assurer que le dossier ~/.ssh existe
+          mkdir -p ~/.ssh
+          # Ajouter l'empreinte du serveur distant pour éviter l'avertissement de sécurité SSH
+          ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+          
+          # Sur le serveur distant : créer le dossier de déploiement si besoin
+          ssh $SERVER_USER@$SERVER_IP "
+            sudo mkdir -p /var/www/backEnd &&
+            sudo chown ubuntu:ubuntu /var/www/backEnd
+          "
+          
+          # Sur le serveur distant : se placer dans /var/www/backEnd
+          # et supprimer tous les fichiers SAUF le dossier "uploads"
+          ssh $SERVER_USER@$SERVER_IP "
+          cd /var/www/backEnd &&
+          bash -c '
+          shopt -s extglob
+          rm -rf !(\"uploads\")
+          '
+          "
+          
+          # Envoyer l'archive du projet vers le serveur distant
+          scp deploy.tar.gz $SERVER_USER@$SERVER_IP:/var/www/backEnd
+
+          ssh $SERVER_USER@$SERVER_IP "
+            cd /var/www/backEnd &&
+            # Envoyer l'archive du projet vers le serveur distant
+            tar xzf deploy.tar.gz &&
+            # Supprimer l'archive après extraction
+            rm deploy.tar.gz &&
+
+            # Vérifier si uploads existe, sinon le créer
+            [ -d uploads ] || mkdir uploads
+
+            # Recréer le fichier .env.production à partir du secret
+            echo '${{ secrets.ENV_PROD_FILE }}' | tr '\r' '\n' > .env.production &&
+          
+            # Installer les dépendances node (sans les devDependencies pour la prod)
+            npm install --omit=dev &&
+            # Redémarrer (ou démarrer) l'application avec PM2 en mode production
+            pm2 startOrRestart ecosystem.config.js --env production &&
+            pm2 save
+          "

@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
+import app from '../../app';
 import { ErrorEnum } from '../../enums/errorEnum';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
@@ -115,7 +115,7 @@ afterAll(async () => {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
 
-        const imagePath = path.resolve(__dirname, '.\\..\\upload\\input\\test_upload_image.png');
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_image.png');
 
         const requestBuilder = request(app)
         .post('/api/mission')
@@ -132,8 +132,13 @@ afterAll(async () => {
 
         const response = await requestBuilder;
         expect(response.status).toBe(201);
-        
-        expect(fs.existsSync(process.env.FILES_UPLOAD_OUTPUT + path.basename(response.body.accepedUploadedFiles[0]))).toBe(true)
+
+        const uploadedFilePath = path.join(
+            process.env.FILES_UPLOAD_OUTPUT,
+            path.basename(response.body.accepedUploadedFiles[0])
+        );
+
+        expect(fs.existsSync(uploadedFilePath)).toBe(true);
     });
 
     test('Test de la création d\'une mission avec upload d\'un fichier qui n\'est pas une image.', async () => {
@@ -141,7 +146,8 @@ afterAll(async () => {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
 
-        const imagePath = path.resolve(__dirname, '.\\..\\upload\\input\\test_upload_document.docx');
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_document.docx');
+
         const requestBuilder = request(app)
         .post('/api/mission')
         .field("description", "Good description")

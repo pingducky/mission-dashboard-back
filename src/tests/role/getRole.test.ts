@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app  from '../..';
+import app from '../../app';
 import { resetDatabase } from '../../utils/databaseUtils';
 import sequelize from '../../config/sequelize';
 
