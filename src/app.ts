@@ -4,7 +4,6 @@ import { Secret } from 'jsonwebtoken';
 import { setupSwagger } from '../swagger';
 import cors from 'cors';
 
-
 const app = express();
 
 app.use(cors({
