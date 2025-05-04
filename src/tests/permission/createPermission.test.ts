@@ -1,10 +1,10 @@
 import request from "supertest";
-import app from "../..";
+import app from '../../app';
 import { resetDatabase } from "../../utils/databaseUtils";
 import { ErrorEnum } from "../../enums/errorEnum";
 import sequelize from "../../config/sequelize";
 import { PermissionMessageEnum } from "../../controllers/enums/PermissionMessageEnum";
-import { generateAuthTokenForTest } from "../utils/TestProvider";
+import { generateAuthTokenForTest } from "../Utils/TestProvider";
 
 let authToken: string;
 

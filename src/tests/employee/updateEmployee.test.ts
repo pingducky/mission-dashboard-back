@@ -1,10 +1,8 @@
 import request from "supertest";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
+import app from '../../app';
 import sequelize from "../../config/sequelize";
 import { ErrorEnum } from "../../enums/errorEnum";
-import EmployeRepository from "../../repositories/EmployeRepository";
-import { InternalServerError } from "../../Errors/InternalServerError";
 
 let authToken: string;
 
