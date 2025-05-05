@@ -12,10 +12,9 @@ import {Op} from "sequelize";
 
 export const startWorkSession = async (req: Request, res: Response): Promise<void> => {
     try {
-        const idAccount = (req as any).user?.id;
-        const idMission = parseInt(req.params.idMission, 10);
+        const { idAccount, idMission } = req.body;
 
-        if (!idAccount || isNaN(idMission)) {
+        if (!idAccount) {
             throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
         }
 
@@ -24,9 +23,11 @@ export const startWorkSession = async (req: Request, res: Response): Promise<voi
             throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
         }
 
-        const mission = await MissionModel.findByPk(idMission);
-        if (!mission) {
-            throw new NotFoundError(ErrorEnum.NOT_FOUND);
+        if (idMission) {
+            const mission = await MissionModel.findByPk(idMission);
+            if (!mission) {
+                throw new NotFoundError(ErrorEnum.NOT_FOUND);
+            }
         }
 
         const existingActiveSession = await WorkSessionModel.findOne({
@@ -236,6 +237,50 @@ export const getSessionsByMissionId = async (req: Request, res: Response): Promi
             missionId: idMission,
             sessions: enrichedSessions
         });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
+export const getSessionsWithoutMission = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const sessions = await WorkSessionModel.findAll({
+            where: { idMission: null },
+            include: [
+                {
+                    model: AccountModel,
+                    attributes: ["id", "firstName", "lastName"]
+                },
+                {
+                    model: WorkSessionPauseModel,
+                    as: "pauses",
+                    attributes: ["id", "pauseTime", "resumeTime"],
+                    order: [["pauseTime", "ASC"]]
+                }
+            ],
+            order: [["startTime", "DESC"]]
+        });
+
+        const enriched = sessions.map(session => {
+            const start = new Date(session.startTime);
+            const end = session.endTime ? new Date(session.endTime) : new Date();
+            const total = end.getTime() - start.getTime();
+            const pauses = session.pauses?.reduce((sum, pause) => {
+                if (pause.pauseTime && pause.resumeTime) {
+                    return sum + (new Date(pause.resumeTime).getTime() - new Date(pause.pauseTime).getTime());
+                }
+                return sum;
+            }, 0) || 0;
+
+            return {
+                ...session.toJSON(),
+                totalDuration: formatDuration(total),
+                totalPause: formatDuration(pauses),
+                netWorkDuration: formatDuration(total - pauses)
+            };
+        });
+
+        res.status(200).json({ sessions: enriched });
     } catch (error) {
         handleHttpError(error, res);
     }

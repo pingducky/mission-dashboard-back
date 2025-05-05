@@ -13,7 +13,7 @@ export enum WorkSessionStatusEnum {
 class WorkSessionModel extends Model {
     public id!: number;
     public idAccount!: number;
-    public idMission!: number;
+    public idMission!: number | null;
     public startTime!: Date;
     public endTime?: Date | null;
     public status!: WorkSessionStatusEnum;
@@ -42,7 +42,7 @@ WorkSessionModel.init(
         },
         idMission: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: MissionModel,
                 key: "id",
