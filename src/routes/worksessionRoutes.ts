@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { auth } from "../middleware/authMiddleware";
 import {
-    getSessionsByMissionId, getSessionsWithoutMission,
+    createManualSession,
+    getSessionsByMissionId,
+    getSessionsWithoutMission,
     pauseWorkSession,
     resumeWorkSession,
     startWorkSession,
@@ -21,5 +23,7 @@ router.post("/:sessionId/stop", auth, stopWorkSession);
 router.get("/:idMission/sessions", auth, getSessionsByMissionId);
 
 router.get("/withoutMission", auth, getSessionsWithoutMission);
+
+router.post("/manualSession", auth, createManualSession)
 
 module.exports = router;

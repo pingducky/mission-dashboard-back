@@ -285,3 +285,51 @@ export const getSessionsWithoutMission = async (req: Request, res: Response): Pr
         handleHttpError(error, res);
     }
 };
+
+export const createManualSession = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { idAccount, idMission, startTime, endTime, pauses } = req.body;
+
+        if (!idAccount || !startTime || !endTime) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+
+        if (idMission) {
+            const mission = await MissionModel.findByPk(idMission);
+            if (!mission) throw new NotFoundError(ErrorEnum.NOT_FOUND);
+        }
+
+        const session = await WorkSessionModel.create({
+            idAccount,
+            idMission: idMission || null,
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            status: WorkSessionStatusEnum.ENDED
+        });
+
+        const createdPauses = [];
+
+        if (Array.isArray(pauses)) {
+            for (const pause of pauses) {
+                if (!pause.pauseTime || !pause.resumeTime) continue;
+                const newPause = await WorkSessionPauseModel.create({
+                    idWorkSession: session.id,
+                    pauseTime: new Date(pause.pauseTime),
+                    resumeTime: new Date(pause.resumeTime)
+                });
+                createdPauses.push(newPause);
+            }
+        }
+
+        res.status(201).json({
+            message: "Session manuelle créée",
+            session,
+            pauses: createdPauses
+        });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
