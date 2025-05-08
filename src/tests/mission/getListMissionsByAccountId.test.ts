@@ -99,6 +99,21 @@ describe('Liste des missions filtrées', () => {
     });
 
     test('Retourne toutes les missions liées au compte', async () => {
+        const otherAccount = await AccountModel.create({
+            firstName: "Other",
+            lastName: "User",
+            email: "other.user@example.com",
+            password: "securepassword"
+        });
+
+        const unlinkedMission = await MissionModel.create({
+            description: "Mission isolée",
+            timeBegin: new Date("2025-03-29T10:00:00Z"),
+            address: "Adresse X",
+            idMissionType: 1,
+            accountAssignId: otherAccount.id
+        });
+
         const response = await request(app)
             .get(`/api/mission/listMissions/${accountId}`)
             .set("Authorization", `Bearer ${authToken}`);
