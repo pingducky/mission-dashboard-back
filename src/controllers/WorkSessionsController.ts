@@ -244,8 +244,22 @@ export const getSessionsByMissionId = async (req: Request, res: Response): Promi
 
 export const getSessionsWithoutMission = async (req: Request, res: Response): Promise<void> => {
     try {
+        const idAccount = parseInt(req.params.idAccount, 10);
+
+        if (isNaN(idAccount)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(idAccount);
+        if (!account) {
+            throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+        }
+
         const sessions = await WorkSessionModel.findAll({
-            where: { idMission: null },
+            where: {
+                idMission: null,
+                idAccount
+            },
             include: [
                 {
                     model: AccountModel,

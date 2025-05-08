@@ -22,7 +22,7 @@ router.post("/:sessionId/stop", auth, stopWorkSession);
 
 router.get("/:idMission/sessions", auth, getSessionsByMissionId);
 
-router.get("/withoutMission", auth, getSessionsWithoutMission);
+router.get("/withoutMission/:idAccount", auth, getSessionsWithoutMission);
 
 router.post("/manualSession", auth, createManualSession)
 
