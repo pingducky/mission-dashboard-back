@@ -10,4 +10,8 @@ export enum MissionEnum {
     ERROR_DURING_DELETING_MISSION = "Une erreur est survenue lors de la suppression de la mission.",
     INVALID_MISSION_ID = "L'ID de la mission est invalide",
     ERROR_DURING_FETCHING_MISSION = "Une erreur est survenue lors de la récupération de la mission.",
+    BAD_ACCOUNT_ASSIGNATION = "Aucun compte valide n'a pu être assigné à cette mission. La mission n'a pas été créée.",
+    CONFLIT_MISSION = "Conflit avec une autre mission",
+    NOT_FOUND_ACCOUNT = "Compte inexistant",
+    ACCOUNT_ASSIGN_ID_JSON = "Le champ accountAssignIds doit être un tableau JSON valide.'"
 }

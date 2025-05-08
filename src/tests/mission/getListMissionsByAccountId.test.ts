@@ -49,18 +49,21 @@ beforeAll(async () => {
         {
             description: "Mission A",
             timeBegin: new Date("2025-03-26T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse A",
             idMissionType: 1
         },
         {
             description: "Mission B",
             timeBegin: new Date("2025-03-28T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse B",
             idMissionType: 1
         },
         {
             description: "Mission C",
             timeBegin: new Date("2025-04-02T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse C",
             idMissionType: 1
         }

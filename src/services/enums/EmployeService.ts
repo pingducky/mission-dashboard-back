@@ -19,8 +19,6 @@ class EmployeService {
             throw new NotFoundError(ErrorEnum.ROLE_NOT_FOUND);
         }
 
-
-        console.debug('employeId : ', employeId);
         if(add) {
             return await AccountRoleModel.findOrCreate({
                 where: {

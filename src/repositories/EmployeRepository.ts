@@ -10,9 +10,6 @@ import { Op } from 'sequelize';
 class EmployeRepository {
     static async getAll(filter: 'all' | 'active' | 'inactive' | 'online' = 'all') {
         const where: any = {};
-
-        console.log('Filtre utilisé :', filter);
-    
         switch (filter) {
             case 'active':
                 where.archivedAt = null;

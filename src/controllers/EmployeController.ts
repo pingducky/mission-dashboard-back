@@ -21,6 +21,7 @@ export const disableEmployee = async (
   try {
     const { user } = req as CustomRequest;
     const account = await AccountModel.findByPk(user.id);
+
     if (!account || !account.isAdmin) {
       throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
     }
