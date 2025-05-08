@@ -45,7 +45,7 @@ class AuthService {
   }
 
   private static generateJwt(account: AccountModel): string {
-    return jwt.sign({ id: account.id, email: account.email }, SECRET_KEY, {
+    return jwt.sign({ id: account.id, email: account.email, isAdmin: account.isAdmin }, SECRET_KEY, {
       expiresIn: JWT_EXPIRES_IN
     });
   }
