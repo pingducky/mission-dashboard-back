@@ -200,6 +200,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         notificationMail,
         notificationSms,
         archivedAt,
+        hiringDate: new Date(),
       });
   
       if (Array.isArray(roleIds) && roleIds.length > 0) {

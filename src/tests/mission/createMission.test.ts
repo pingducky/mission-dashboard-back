@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
+import app from '../../app';
 import { ErrorEnum } from '../../enums/errorEnum';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
@@ -110,30 +110,36 @@ afterAll(async () => {
             expect(response.status).toBe(201);
     })
 
-    test('Test de la création d\'une mission avec upload d\'une image associé.', async () => {
+    test('Test de la création d\'une mission avec upload d\'une image associée.', async () => {
         if (!process.env.FILES_UPLOAD_OUTPUT) {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
-        const imagePath = path.resolve(__dirname, '../upload/input/test_upload_image.png');
-        if (!fs.existsSync(imagePath)) throw new Error("Fichier image introuvable");
-        
+    
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_image.png');
+    
         const response = await request(app)
-        .post('/api/mission')
-        .field("description", "Good description")
-        .field("timeBegin", "2025-02-17T10:00:00Z")
-        .field("timeEnd", "2025-02-17T10:00:00Z")
-        .field("estimatedEnd", "2025-02-17T10:00:00Z")
-        .field("address", "Good address")
-        .field("city", "Paris")
-        .field("postalCode", "75000")
-        .field("countryCode", "FR")
-        .field("accountAssignIds", JSON.stringify([1]))
-        .field("missionTypeId", 1)
-        .set("Authorization", `Bearer ${authToken}`)
-        .attach("pictures", imagePath);
-
+            .post('/api/mission')
+            .field("description", "Good description")
+            .field("timeBegin", "2025-02-17T10:00:00Z")
+            .field("timeEnd", "2025-02-17T10:00:00Z")
+            .field("estimatedEnd", "2025-02-17T10:00:00Z")
+            .field("address", "Good address")
+            .field("city", "Paris")
+            .field("postalCode", "75000")
+            .field("countryCode", "FR")
+            .field("accountAssignIds", JSON.stringify([1]))
+            .field("missionTypeId", 1)
+            .set("Authorization", `Bearer ${authToken}`)
+            .attach("pictures", imagePath);
+    
         expect(response.status).toBe(201);
-        expect(fs.existsSync(process.env.FILES_UPLOAD_OUTPUT + path.basename(response.body.uploadedFiles[0]))).toBe(true)
+        console.debug("response.body : ", response.body);
+        const uploadedFilePath = path.join(
+            process.env.FILES_UPLOAD_OUTPUT,
+            path.basename(response.body.uploadedFiles[0])
+        );
+    
+        expect(fs.existsSync(uploadedFilePath)).toBe(true);
     });
 
     test('Test de la création d\'une mission avec upload d\'un fichier qui n\'est pas une image.', async () => {
@@ -141,7 +147,8 @@ afterAll(async () => {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour que les tests d\'upload fonctionnent.');
         }
 
-        const imagePath = path.resolve(__dirname, '.\\..\\upload\\input\\test_upload_document.docx');
+        const imagePath = path.resolve(__dirname, '..', 'upload', 'input', 'test_upload_document.docx');
+
         const requestBuilder = request(app)
         .post('/api/mission')
         .field("description", "Good description")

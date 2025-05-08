@@ -14,6 +14,7 @@ import { NotFoundError } from "../Errors/NotFoundError";
 import fs from "fs";
 import MessageModel from "../models/MessageModel";
 import {Op} from "sequelize";
+import path from "path";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -131,7 +132,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             acceptedUploadedFiles = filesUploaded;
 
             const pictureRecords = filesUploaded.map(filePath => ({
-                name: filePath.split("\\").pop(),
+                name: path.basename(filePath),
                 alt: "Image de la mission",
                 path: filePath,
                 idMission: newMission.id
@@ -224,7 +225,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
             rejectedUploadFiles = rejectedFiles;
             accepedUploadedFiles = filesUploaded;
             const pictureRecords = filesUploaded.map(filePath => ({
-                name: filePath.split("\\").pop(),
+                name: path.basename(filePath),
                 alt: "Image de la mission",
                 path: filePath,
                 idMission: missionId

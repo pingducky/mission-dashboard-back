@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../../index";
+import app from '../../app';
 import MissionModel from '../../models/MissionModel';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { generateAuthTokenForTest } from "../Utils/TestProvider";
