@@ -37,18 +37,16 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         const assignedAccounts: any[] = [];
         const failedAssignments: { accountId: number, reason: string }[] = [];
 
-        // Vérification des champs obligatoires
         if (!description || !timeBegin || !estimatedEnd || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
             throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
         }
 
-        // Parse correctement accountAssignIds (string dans form-data)
         let parsedAccountAssignIds: number[] = [];
         if (typeof accountAssignIds === 'string') {
             try {
                 parsedAccountAssignIds = JSON.parse(accountAssignIds);
             } catch {
-                throw new BadRequestError('Le champ accountAssignIds doit être un tableau JSON valide.');
+                throw new BadRequestError(MissionEnum.ACCOUNT_ASSIGN_ID_JSON);
             }
         } else if (Array.isArray(accountAssignIds)) {
             parsedAccountAssignIds = accountAssignIds;
@@ -64,7 +62,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         for (const accountId of parsedAccountAssignIds) {
             const account = await AccountModel.findByPk(accountId);
             if (!account) {
-                failedAssignments.push({ accountId, reason: "Compte inexistant" });
+                failedAssignments.push({ accountId, reason: MissionEnum.NOT_FOUND_ACCOUNT });
                 continue;
             }
 
@@ -140,7 +138,6 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             await PictureModel.bulkCreate(pictureRecords);
         }
 
-        // Réponse
         res.status(201).json({
             missionId: newMission.id,
             assignedAccountIds: assignedAccounts.map(account => account.id),
