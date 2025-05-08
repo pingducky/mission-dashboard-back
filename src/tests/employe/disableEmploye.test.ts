@@ -3,7 +3,8 @@ import app from "../..";
 import { resetDatabase } from "../../utils/databaseUtils";
 import { ErrorEnum } from "../../enums/errorEnum";
 import sequelize from "../../config/sequelize";
-import { generateAuthTokenForTest, giveAdminRole, initRoles } from "../Utils/TestProvider";
+import { generateAuthTokenForTest, initRoles } from "../Utils/TestProvider";
+import AccountModel from "../../models/AccountModel";
 
 let authToken: string;
 
@@ -29,7 +30,7 @@ describe("PUT /employee/:id/disable", () => {
     });
 
     test("Doit désactiver l'employé", async () => {
-        await giveAdminRole();
+        await AccountModel.update({ isAdmin: true }, { where: { id: 1 } });
 
         const response = await request(app)
             .put("/api/employee/1/disable")
@@ -47,7 +48,7 @@ describe("PUT /employee/:id/disable", () => {
     });
 
     test("Doit retourner une erreur si l'employé n'existe pas", async () => {
-        await giveAdminRole();
+        await AccountModel.update({ isAdmin: true }, { where: { id: 1 } });
 
         const response = await request(app)
         .put("/api/employee/9999/disable")
