@@ -37,7 +37,7 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         const failedAssignments: { accountId: number, reason: string }[] = [];
 
         // Vérification des champs obligatoires
-        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
+        if (!description || !timeBegin || !estimatedEnd || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
             throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
         }
 
@@ -74,12 +74,12 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
                     as: 'mission',
                     where: {
                         [Op.or]: [
-                            { timeBegin: { [Op.between]: [timeBegin, timeEnd] } },
-                            { timeEnd: { [Op.between]: [timeBegin, timeEnd] } },
+                            { timeBegin: { [Op.between]: [timeBegin, estimatedEnd] } },
+                            { estimatedEnd: { [Op.between]: [timeBegin, estimatedEnd] } },
                             {
                                 [Op.and]: [
                                     { timeBegin: { [Op.lte]: timeBegin } },
-                                    { timeEnd: { [Op.gte]: timeEnd } }
+                                    { estimatedEnd: { [Op.gte]: estimatedEnd } }
                                 ]
                             }
                         ]
@@ -104,8 +104,8 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         const newMission = await MissionModel.create({
             description,
             timeBegin,
-            timeEnd: timeEnd || null,
-            estimatedEnd: estimatedEnd || null,
+            timeEnd: null,
+            estimatedEnd: estimatedEnd,
             address,
             city,
             postalCode,
@@ -576,9 +576,9 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 
         for (const mission of allMissions) {
             const timeBegin = new Date(mission.timeBegin);
-            const timeEnd = mission.timeEnd ? new Date(mission.timeEnd) : null;
+            const estimatedEnd = mission.estimatedEnd ? new Date(mission.estimatedEnd) : null;
 
-            if (timeEnd && timeEnd < today) {
+            if (estimatedEnd && estimatedEnd < today) {
                 categorized.past.push(mission);
             } else if (timeBegin >= tomorrow) {
                 categorized.future.push(mission);
@@ -604,7 +604,6 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
             if (filtersArray.includes("current")) result.current = applyLimit(categorized.current);
             if (filtersArray.includes("future")) result.future = applyLimit(categorized.future);
         }
-
         res.status(200).json(result);
     } catch (error) {
         handleHttpError(error, res);

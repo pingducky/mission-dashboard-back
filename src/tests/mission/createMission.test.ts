@@ -67,6 +67,7 @@ afterAll(async () => {
         .send({
             description: "Good description",
             timeBegin: "2025-02-17T10:00:00Z",
+            estimatedEnd: "2025-02-17T10:00:00Z",
             address: "Good adresse",
             city: "Good city",
             postalCode: "75000",
@@ -145,6 +146,7 @@ afterAll(async () => {
         .post('/api/mission')
         .field("description", "Good description")
         .field("timeBegin", "2025-02-17T10:00:00Z")
+        .field("estimatedEnd", "2025-02-17T10:00:00Z")
         .field("address", "Good adresse")
         .field("city", "Good city")
         .field("postalCode", "75000")
@@ -165,6 +167,7 @@ afterAll(async () => {
         .send({
             description: "Good description",
             timeBegin: "2025-02-17T10:00:00Z",
+            estimatedEnd: "2025-02-17T10:00:00Z",
             address: "Good adresse",
             city: "Good city",
             postalCode: "75000",
@@ -183,6 +186,7 @@ afterAll(async () => {
         .send({
             description: "Good description",
             timeBegin: "2025-02-17T10:00:00Z",
+            estimatedEnd: "2025-02-17T10:00:00Z",
             address: "Good adresse",
             city: "Good city",
             postalCode: "75000",
@@ -202,6 +206,7 @@ afterAll(async () => {
             description: "Good description",
             timeBegin: "2025-02-17T10:00:00Z",
             address: "Good adresse",
+            estimatedEnd: "2025-02-17T10:00:00Z",
             city: "Good city",
             postalCode: "75000",
             countryCode: "FR",

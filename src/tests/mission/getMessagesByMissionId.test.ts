@@ -38,6 +38,7 @@ beforeAll(async () => {
     const mission = await MissionModel.create({
         description: "Mission test",
         timeBegin: "2025-04-14T12:00:00Z",
+        estimatedEnd: "2025-04-14T12:00:00Z",
         address: "1 rue du test",
         idMissionType: 1
     });

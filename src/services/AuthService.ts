@@ -24,7 +24,7 @@ class AuthService {
       password: hashedPassword,
       archivedAt: null,
       phoneNumber: phoneNumber,
-      isAdmin: true,
+      isAdmin: false,
     });
 
     return AuthService.generateJwt(newAccount);

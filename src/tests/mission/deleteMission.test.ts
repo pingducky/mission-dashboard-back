@@ -31,6 +31,7 @@ beforeAll(async () => {
         .send({
             description: "Good description",
             timeBegin: "2025-02-17T10:00:00Z",
+            estimatedEnd: "2025-02-17T10:00:00Z",
             address: "Good adresse",
             city: "Good city",
             postalCode: "75000",

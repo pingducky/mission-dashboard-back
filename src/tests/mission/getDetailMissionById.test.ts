@@ -30,6 +30,7 @@ beforeAll(async () => {
     const mission = await MissionModel.create({
         description: "Test mission description",
         timeBegin: "2025-02-17T10:00:00Z",
+        estimatedEnd: "2025-02-17T10:00:00Z",
         address: "Test address",
         idMissionType: missionType.id,
     });
@@ -82,6 +83,7 @@ describe("getDetailMissionById", () => {
             .post('/api/mission')
             .field("description", "Mission test complète")
             .field("timeBegin", "2025-03-01T08:00:00Z")
+            .field("estimatedEnd", "2025-03-01T08:00:00Z")
             .field("address", "Test adresse")
             .field("city", "Test ville")
             .field("postalCode", "75000")

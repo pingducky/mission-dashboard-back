@@ -30,6 +30,7 @@ const testAccount = {
 const testMission = {
     description: 'Mission de test',
     timeBegin: '2025-05-01T10:00:00Z',
+    estimatedEnd: '2025-05-01T10:00:00Z',
     address: '123 Test Street',
     idMissionType: testMissionType.id,
 };
