@@ -477,7 +477,8 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                     // Personne assignée à la mission
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
-                    through: { attributes: [] }
+                    through: { attributes: [] },
+                    where: { id: accountId }
                 },
                 {
                     model: MissionTypeModel,
