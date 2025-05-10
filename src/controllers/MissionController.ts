@@ -384,6 +384,11 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         }
 
         const where: any = {};
+        const whereAccount: any = {};
+
+        if(!account.isAdmin) {
+            whereAccount.id = account.id;
+        }
 
         if (from) {
             where.timeBegin = { [Op.gte]: new Date(from as string) };
@@ -400,14 +405,15 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             where.idMissionType = parseInt(filterByType as string, 10);
         }
 
-        const missions = await MissionModel.findAll({
+        const missionModels = await MissionModel.findAll({
             where,
             include: [
                 {
                     // Personne assignée à la mission
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
-                    through: { attributes: [] }
+                    through: { attributes: [] },
+                    where: whereAccount
                 },
                 {
                     model: MissionTypeModel,
@@ -418,7 +424,15 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             limit: limit ? parseInt(limit as string, 10) : undefined
         });
 
-        res.status(200).json({ missions });
+        const missions = missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
+            const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
+            mission = mission.get({ plain: true })
+            mission['assignedUsers'] = assignedUsers;
+
+            return mission;
+        });
+
+        res.status(200).json(missions);
     } catch (error) {
         handleHttpError(error, res);
     }
@@ -541,9 +555,8 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 
 export const getAllMissionsTypes = async (req: Request, res: Response): Promise<void> => {
     try {
-        console.debug("s*,sssds");
         const missionTypes = await MissionTypeModel.findAll();
-        res.status(200).json({ missionTypes });
+        res.status(200).json( missionTypes );
     } catch (error) {
         handleHttpError(error, res);
     }
