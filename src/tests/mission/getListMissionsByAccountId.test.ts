@@ -114,6 +114,7 @@ describe('Liste des missions filtrées', () => {
             timeBegin: new Date("2025-03-29T10:00:00Z"),
             address: "Adresse X",
             idMissionType: 1,
+            estimatedEnd: new Date("2025-03-29T10:00:00Z"),
             accountAssignId: otherAccount.id
         });
 
