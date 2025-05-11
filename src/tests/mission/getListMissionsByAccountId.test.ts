@@ -49,18 +49,21 @@ beforeAll(async () => {
         {
             description: "Mission A",
             timeBegin: new Date("2025-03-26T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse A",
             idMissionType: 1
         },
         {
             description: "Mission B",
             timeBegin: new Date("2025-03-28T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse B",
             idMissionType: 1
         },
         {
             description: "Mission C",
             timeBegin: new Date("2025-04-02T10:00:00Z"),
+            estimatedEnd: new Date("2025-03-26T10:00:00Z"),
             address: "Adresse C",
             idMissionType: 1
         }
@@ -99,6 +102,22 @@ describe('Liste des missions filtrées', () => {
     });
 
     test('Retourne toutes les missions liées au compte', async () => {
+        const otherAccount = await AccountModel.create({
+            firstName: "Other",
+            lastName: "User",
+            email: "other.user@example.com",
+            password: "securepassword"
+        });
+
+        const unlinkedMission = await MissionModel.create({
+            description: "Mission isolée",
+            timeBegin: new Date("2025-03-29T10:00:00Z"),
+            address: "Adresse X",
+            idMissionType: 1,
+            estimatedEnd: new Date("2025-03-29T10:00:00Z"),
+            accountAssignId: otherAccount.id
+        });
+
         const response = await request(app)
             .get(`/api/mission/listMissions/${accountId}`)
             .set("Authorization", `Bearer ${authToken}`);
