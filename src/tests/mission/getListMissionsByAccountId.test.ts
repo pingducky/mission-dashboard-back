@@ -266,6 +266,7 @@ describe('Liste des missions filtrées', () => {
             description: "Mission active",
             timeBegin: new Date(now.getTime() - 60 * 60 * 1000), // 1h avant
             timeEnd: new Date(now.getTime() + 60 * 60 * 1000),   // 1h après
+            estimatedEnd: new Date(now.getTime()  + 60 * 60 * 1000),
             address: "Adresse active",
             idMissionType: 1
         });
@@ -291,6 +292,7 @@ describe('Liste des missions filtrées', () => {
         const mission = await MissionModel.create({
             description: "Mission prévue",
             timeBegin: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            estimatedEnd: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
             address: "Adresse prévue",
             idMissionType: 1
         });
@@ -314,8 +316,9 @@ describe('Liste des missions filtrées', () => {
 
         const mission = await MissionModel.create({
             description: "Mission passée",
-            timeBegin: new Date("2025-01-01T10:00:00Z"),
+            timeBegin: new Date("2025-01-01T09:00:00Z"),
             timeEnd: new Date("2025-01-02T10:00:00Z"),
+            estimatedEnd: "2025-01-02T10:00:00Z",
             address: "Adresse passée",
             idMissionType: 1
         });
@@ -341,7 +344,8 @@ describe('Liste des missions filtrées', () => {
         const mission = await MissionModel.create({
             description: "Mission annulée",
             timeBegin: new Date(now.getTime() + 2 * 60 * 60 * 1000),
-            timeEnd: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+            timeEnd: new Date(now.getTime() + 3 * 60 * 60 * 1000),
+            estimatedEnd: new Date(Date.now() + 3 * 60 * 60 * 1000),
             address: "Adresse annulée",
             isCanceled: true,
             idMissionType: 1
