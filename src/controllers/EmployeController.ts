@@ -12,30 +12,57 @@ import RoleModel from '../models/RoleModel';
 import bcrypt from 'bcrypt';
 import AccountRoleModel from '../models/AccountRoleModel';
 import { generateRandomPassword } from '../services/AuthService';
+import { UnauthorizedError } from '../Errors/UnauthorizedError';
 
-export const disableEmployee = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { user } = req as CustomRequest;
+export const disableEmployee = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { user } = req as CustomRequest;
+    const account = await AccountModel.findByPk(user.id);
 
-        if(!(await EmployeRepository.checkPermission(user.id, permissionsEnum.DISABLE_EMPLOYEE))){
-            res.status(401).json({ error: ErrorEnum.UNAUTHORIZED });
-            return;
-        }
-
-
-        const id = parseInt(req.params.id, 10);
-        const employee = await AccountModel.findByPk(id);
-        
-        if (!employee) {
-            res.status(400).json({ message: ErrorEnum.ACCOUNT_NOT_FOUND });
-            return;
-        }
-        
-        await employee.update({ isEnabled: false });
-        res.status(204).send();
-    } catch (error: unknown) {
-        handleHttpError(error, res);
+    if (!account || !account.isAdmin) {
+      throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
     }
+
+    const id = parseInt(req.params.id, 10);
+    const employee = await AccountModel.findByPk(id);
+
+    if (!employee) {
+      throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+    }
+
+    await employee.update({ archivedAt: new Date() });
+    res.status(204).send();
+  } catch (error: unknown) {
+    handleHttpError(error, res);
+  }
+};
+
+export const activateEmployee = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { user } = req as CustomRequest;
+    const account = await AccountModel.findByPk(user.id);
+    if (!account || !account.isAdmin) {
+      throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
+    }
+
+    const id = parseInt(req.params.id, 10);
+    const employee = await AccountModel.findByPk(id);
+
+    if (!employee) {
+      throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+    }
+
+    await employee.update({ archivedAt: null });
+    res.status(204).send();
+  } catch (error: unknown) {
+    handleHttpError(error, res);
+  }
 };
 
 
@@ -127,7 +154,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed,
         notificationMail,
         notificationSms,
-        isEnabled,
+        archivedAt,
         roleIds
       } = req.body;
   
@@ -143,7 +170,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed === undefined ||
         notificationMail === undefined ||
         notificationSms === undefined ||
-        isEnabled === undefined
+        archivedAt === undefined
       ) {
         throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
       }
@@ -172,7 +199,8 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         isGpsTrackingAllowed,
         notificationMail,
         notificationSms,
-        isEnabled,
+        archivedAt,
+        hiringDate: new Date(),
       });
   
       if (Array.isArray(roleIds) && roleIds.length > 0) {

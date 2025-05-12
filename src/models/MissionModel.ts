@@ -9,7 +9,7 @@ class MissionModel extends Model {
     public description!: string;
     public timeBegin!: Date;
     public timeEnd?: Date;
-    public estimatedEnd?: Date;
+    public estimatedEnd!: Date;
     public address!: string;
     public city!: string;
     public postalCode!: string;
@@ -36,7 +36,7 @@ MissionModel.init(
         },
         estimatedEnd: {
             type: DataTypes.DATE,
-            allowNull: true,
+            allowNull: false,
         },
         address: {
             type: DataTypes.TEXT,

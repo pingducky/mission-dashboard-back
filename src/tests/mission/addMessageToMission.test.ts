@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from '../../config/sequelize';
 import { resetDatabase } from '../../utils/databaseUtils';
-import app from '../..';
+import app from '../../app';
 import { ErrorEnum } from '../../enums/errorEnum';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import AccountModel from '../../models/AccountModel';
@@ -30,6 +30,7 @@ const testAccount = {
 const testMission = {
     description: 'Mission de test',
     timeBegin: '2025-05-01T10:00:00Z',
+    estimatedEnd: '2025-05-01T10:00:00Z',
     address: '123 Test Street',
     idMissionType: testMissionType.id,
 };

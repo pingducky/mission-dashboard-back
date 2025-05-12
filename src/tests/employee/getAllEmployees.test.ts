@@ -1,6 +1,6 @@
 import request from "supertest";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../..";
+import app from '../../app';
 import sequelize from "../../config/sequelize";
 import AccountModel from "../../models/AccountModel";
 import TokenModel from "../../models/TokenModel";
@@ -19,21 +19,21 @@ const users = [
         ...defaultUser,
         id: 2,
         email: "jane.smith2@example.com",
-        isEnabled: true,
+        archivedAt: null,
         isOnline: false,
     },
     {
         ...defaultUser,
         id: 3,
         email: "jane.smith3@example.com",
-        isEnabled: true,
+        archivedAt: null,
         isOnline: true,
     },
     {
         ...defaultUser,
         id: 4,
         email: "jane.smith4@example.com",
-        isEnabled: false,
+        archivedAt: new Date(),
         isOnline: false,
     }
 ];
@@ -100,17 +100,17 @@ describe("Employee API", () => {
             expect.objectContaining({
                 id: 1,
                 email: 'john.doe@example.com',
-                isEnabled: true
+                archivedAt: null
             }),
             expect.objectContaining({
                 id: 2,
                 email: 'jane.smith2@example.com',
-                isEnabled: true
+                archivedAt: null
             }),
             expect.objectContaining({
                 id: 3,
                 email: 'jane.smith3@example.com',
-                isEnabled: true
+                archivedAt: null
             }),
         ]
         );
@@ -126,7 +126,7 @@ describe("Employee API", () => {
             expect.objectContaining({
                 id: 4,
                 email: 'jane.smith4@example.com',
-                isEnabled: false
+                archivedAt: expect.any(String)
             })
         ]
         );

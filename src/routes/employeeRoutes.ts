@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createEmployee, disableEmployee, getAllEmployees, getEmployeeById, updateEmployee } from "../controllers/EmployeController";
+import { createEmployee, disableEmployee, activateEmployee, getAllEmployees, getEmployeeById, updateEmployee } from "../controllers/EmployeController";
 import { auth } from "../middleware/authMiddleware";
 import { updateEmployeRole } from "../controllers/RoleController";
 
@@ -97,7 +97,9 @@ router.get ('/:id', auth, getEmployeeById);
  */
 router.patch('/:id', auth, updateEmployee);
 
-router.put('/:id/disable', auth, disableEmployee)
+router.put('/:id/disable', auth, disableEmployee);
+
+router.put('/:id/activate', auth, activateEmployee);
 
 router.patch("/:id/role", auth, updateEmployeRole);
 

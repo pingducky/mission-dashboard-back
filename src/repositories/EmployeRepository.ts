@@ -5,22 +5,20 @@ import AccountRoleModel from '../models/AccountRoleModel';
 import RoleModel from '../models/RoleModel';
 import PermissionRoleModel from '../models/PermissionRoleModel';
 import PermissionModel from '../models/PermissionModel';
+import { Op } from 'sequelize';
 
 class EmployeRepository {
     static async getAll(filter: 'all' | 'active' | 'inactive' | 'online' = 'all') {
         const where: any = {};
-
-        console.log('Filtre utilisé :', filter);
-    
         switch (filter) {
             case 'active':
-                where.isEnabled = true;
+                where.archivedAt = null;
                 break;
             case 'inactive':
-                where.isEnabled = false;
+                where.archivedAt = { [Op.not]: null };
                 break;
             case 'online':
-                where.isEnabled = true;
+                where.archivedAt = null;
                 where.isOnline = true;
                 break;
             case 'all':

@@ -28,7 +28,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         // Nombre total d'employés actifs
         const employeeCount = await AccountModel.count({
             where: {
-                isEnabled: true,
+                archivedAt: null,
                 isAdmin: false,
             },
         });
@@ -96,7 +96,8 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
             employeeCount,
             missionsDoneCount,
             missionsTodayCount,
-            workingTimeToday: "8h30"
+            workingTimeToday: "8h30",
+            isAdmin,
         });
     } catch (error: unknown) {
         handleHttpError(error, res);

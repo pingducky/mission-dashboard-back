@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from '../../config/sequelize';
 import { resetDatabase } from '../../utils/databaseUtils';
-import app from '../..';
+import app from '../../app';
 import { ErrorEnum } from '../../enums/errorEnum';
 import { MissionEnum } from '../../controllers/enums/MissionEnum';
 import MissionTypeModel from '../../models/MissionTypeModel';
@@ -38,6 +38,7 @@ beforeAll(async () => {
     const mission = await MissionModel.create({
         description: "Mission test",
         timeBegin: "2025-04-14T12:00:00Z",
+        estimatedEnd: "2025-04-14T12:00:00Z",
         address: "1 rue du test",
         idMissionType: 1
     });

@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { resetDatabase } from '../../utils/databaseUtils';
 import sequelize from '../../config/sequelize';
-import app from '../..';
+import app from '../../app';
 import { ErrorEnum } from '../../enums/errorEnum';
 
 beforeEach(async () => {

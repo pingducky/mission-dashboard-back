@@ -1,7 +1,7 @@
 import request from 'supertest';
 import sequelize from "../../config/sequelize";
 import { resetDatabase } from "../../utils/databaseUtils";
-import app from "../../index";
+import app from '../../app';
 import MissionModel from '../../models/MissionModel';
 import MissionTypeModel from '../../models/MissionTypeModel';
 import { generateAuthTokenForTest } from "../Utils/TestProvider";
@@ -30,6 +30,7 @@ beforeAll(async () => {
     const mission = await MissionModel.create({
         description: "Test mission description",
         timeBegin: "2025-02-17T10:00:00Z",
+        estimatedEnd: "2025-02-17T10:00:00Z",
         address: "Test address",
         idMissionType: missionType.id,
     });
@@ -42,7 +43,7 @@ beforeAll(async () => {
         email: "2john.doe@example.com",
         password: "hashedpassword",
         phoneNumber: "0600000000",
-        isEnabled: true
+        archivedAt: null,
     });
 
     await AccountMissionAssignModel.create({
@@ -75,27 +76,28 @@ describe("getDetailMissionById", () => {
             email: "jean.dupont@example.com",
             password: "securepassword",
             phoneNumber: "0600000000",
-            isEnabled: true
+            archivedAt: null,
         });
 
         const requestBuilder = request(app)
             .post('/api/mission')
             .field("description", "Mission test complète")
             .field("timeBegin", "2025-03-01T08:00:00Z")
+            .field("estimatedEnd", "2025-03-01T08:00:00Z")
             .field("address", "Test adresse")
             .field("city", "Test ville")
             .field("postalCode", "75000")
             .field("countryCode", "FR")
             .field("missionTypeId", missionType.id)
-            .field("accountAssignId", account.id) // assignation via champ
+            .field("accountAssignIds", JSON.stringify([account.id]))
             .set("Authorization", `Bearer ${authToken}`);
 
         await requestBuilder.attach("pictures", imagePath);
         const response = await requestBuilder;
         expect(response.status).toBe(201);
 
-        const missionId = response.body.mission.id;
-        const uploadedFileName = path.basename(response.body.accepedUploadedFiles[0]);
+        const missionId = response.body.missionId;
+        const uploadedFileName = path.basename(response.body.uploadedFiles[0]);
 
         await MessageModel.create({
             idMission: missionId,
