@@ -422,13 +422,13 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  * - to=YYYY-MM-DD          → Filtre les missions dont la date de début (timeBegin) est <= à cette date
  * - filterByType=ID        → Filtre les missions par identifiant de type de mission (idMissionType)
  * - limit=N                → Limite le nombre de missions retournées à N
- * - status=[actives|passees|prevues|annulees|toutes]
+ * - status=[actives|past|upcoming|canceled|all]
  *                          → Filtre les missions selon leur statut :
  *                              - actives : timeBegin ≤ now && (timeEnd ≥ now || timeEnd is null)
- *                              - passees : timeEnd < now
- *                              - prevues : timeBegin > now
- *                              - annulees : mission.isCanceled = true
- *                              - toutes : aucun filtre appliqué (valeur par défaut)
+ *                              - past : timeEnd < now
+ *                              - upcoming : timeBegin > now
+ *                              - canceled : mission.isCanceled = true
+ *                              - all : aucun filtre appliqué (valeur par défaut)
  *
  * Exemples d’appels :
  * GET /api/mission/listMissions/1?from=2025-03-25
@@ -449,7 +449,7 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  * GET /api/mission/listMissions/1?status=actives
  *   → Missions actuellement actives
  *
- * GET /api/mission/listMissions/1?status=prevues&limit=3
+ * GET /api/mission/listMissions/1?status=upcoming&limit=3
  *   → Prochaines missions à venir, limitées à 3
  *
  * GET /api/mission/listMissions/1?status=passees&from=2025-01-01
@@ -503,22 +503,23 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                 };
                 break;
 
-            case 'passees':
+            case 'past':
                 where.timeEnd = { [Op.lt]: now };
                 break;
 
-            case 'prevues':
+            case 'upcoming':
                 where.timeBegin = {
                     ...(where.timeBegin || {}),
                     [Op.gt]: now,
                 };
+                where.isCanceled = false;
                 break;
 
-            case 'annulees':
+            case 'canceled':
                 where.isCanceled = true;
                 break;
 
-            case 'toutes':
+            case 'all':
             default:
                 break;
         }
@@ -611,11 +612,11 @@ export const getCountListMissionsByAccountId = async (req: Request, res: Respons
         });
 
         res.status(200).json({
-            toutes: allMissionsCount,
+            all: allMissionsCount,
             actives: activeMissionsCount,
-            annulees: canceledMissionsCount,
-            passees: pastMissionsCount,
-            prevues: futureMissionsCount,
+            canceled: canceledMissionsCount,
+            past: pastMissionsCount,
+            upcoming: futureMissionsCount,
         });
 
     } catch (error) {
