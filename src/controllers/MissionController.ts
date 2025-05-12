@@ -427,7 +427,7 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  *                              - actives : timeBegin ≤ now && (timeEnd ≥ now || timeEnd is null)
  *                              - passees : timeEnd < now
  *                              - prevues : timeBegin > now
- *                              - annulees : timeEnd < timeBegin
+ *                              - annulees : mission.isCanceled = true
  *                              - toutes : aucun filtre appliqué (valeur par défaut)
  *
  * Exemples d’appels :
@@ -458,7 +458,7 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { from, to, filterByType, limit, status } = req.query;
+        const { from, to, filterByType, limit, status = 'toutes' } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
@@ -469,41 +469,38 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
         }
 
+        const now = new Date();
         const where: any = {};
 
-        // Filtres temporels manuels
-        if (from) {
-            where.timeBegin = { [Op.gte]: new Date(from as string) };
+        // Filtres temporels
+        if (from || to) {
+            where.timeBegin = {};
+            if (from) {
+                where.timeBegin[Op.gte] = new Date(from as string);
+            }
+            if (to) {
+                where.timeBegin[Op.lte] = new Date(to as string);
+            }
         }
 
-        if (to) {
-            where.timeBegin = {
-                ...(where.timeBegin || {}),
-                [Op.lte]: new Date(to as string),
-            };
-        }
-
-        // Filtre par type
+        // Filtre par type de mission
         if (filterByType) {
             where.idMissionType = parseInt(filterByType as string, 10);
         }
 
-        // Logique des statuts
-        const now = new Date();
-
+        // Filtres par statut
         switch (status) {
             case 'actives':
-                where.timeBegin = { [Op.lte]: now };
-                where.timeEnd = {
-                    [Op.or]: {
-                        [Op.gte]: now,
-                        [Op.is]: null
-                    }
+                where.timeBegin = {
+                    ...(where.timeBegin || {}),
+                    [Op.lte]: now,
                 };
-                break;
-
-            case 'annulees':
-                where.isCanceled = true;
+                where.timeEnd = {
+                    [Op.or]: [
+                        { [Op.gte]: now },
+                        { [Op.is]: null },
+                    ],
+                };
                 break;
 
             case 'passees':
@@ -511,12 +508,18 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                 break;
 
             case 'prevues':
-                where.timeBegin = { [Op.gt]: now };
+                where.timeBegin = {
+                    ...(where.timeBegin || {}),
+                    [Op.gt]: now,
+                };
+                break;
+
+            case 'annulees':
+                where.isCanceled = true;
                 break;
 
             case 'toutes':
             default:
-                // aucun filtre de statut appliqué
                 break;
         }
 
@@ -527,18 +530,93 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
-                    where: { id: accountId }
+                    where: { id: accountId },
                 },
                 {
                     model: MissionTypeModel,
-                    as: 'missionType'
-                }
+                    as: 'missionType',
+                },
             ],
             order: [['timeBegin', 'DESC']],
-            limit: limit ? parseInt(limit as string, 10) : undefined
+            limit: limit ? parseInt(limit as string, 10) : undefined,
         });
 
         res.status(200).json({ missions });
+
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
+export const getCountListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const now = new Date();
+
+        const baseInclude = [
+            {
+                model: AccountModel,
+                attributes: [],
+                through: { attributes: [] },
+                where: { id: accountId },
+            },
+        ];
+
+        const allMissionsCount = await MissionModel.count({
+            include: baseInclude,
+        });
+
+        const activeMissionsCount = await MissionModel.count({
+            where: {
+                timeBegin: { [Op.lte]: now },
+                [Op.or]: [
+                    { timeEnd: { [Op.gte]: now } },
+                    { timeEnd: { [Op.is]: null } },
+                ],
+            },
+            include: baseInclude,
+        });
+
+        const canceledMissionsCount = await MissionModel.count({
+            where: {
+                isCanceled: true,
+            },
+            include: baseInclude,
+        });
+
+        const pastMissionsCount = await MissionModel.count({
+            where: {
+                timeEnd: { [Op.lt]: now },
+                isCanceled: false,
+            },
+            include: baseInclude,
+        });
+
+        const futureMissionsCount = await MissionModel.count({
+            where: {
+                timeBegin: { [Op.gt]: now },
+                isCanceled: false,
+            },
+            include: baseInclude,
+        });
+
+        res.status(200).json({
+            toutes: allMissionsCount,
+            actives: activeMissionsCount,
+            annulees: canceledMissionsCount,
+            passees: pastMissionsCount,
+            prevues: futureMissionsCount,
+        });
 
     } catch (error) {
         handleHttpError(error, res);
