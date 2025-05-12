@@ -612,11 +612,13 @@ export const getCountListMissionsByAccountId = async (req: Request, res: Respons
         });
 
         res.status(200).json({
-            all: allMissionsCount,
-            actives: activeMissionsCount,
-            canceled: canceledMissionsCount,
-            past: pastMissionsCount,
-            upcoming: futureMissionsCount,
+            count: {
+                all: allMissionsCount,
+                actives: activeMissionsCount,
+                canceled: canceledMissionsCount,
+                past: pastMissionsCount,
+                upcoming: futureMissionsCount,
+            }
         });
 
     } catch (error) {
