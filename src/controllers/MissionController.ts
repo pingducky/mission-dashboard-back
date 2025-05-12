@@ -458,7 +458,7 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { from, to, filterByType, limit, status = 'toutes' } = req.query;
+        const { from, to, filterByType, limit, status = 'all' } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
