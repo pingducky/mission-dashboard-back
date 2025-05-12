@@ -34,9 +34,22 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
         let acceptedUploadedFiles: string[] = [];
         let rejectedUploadFiles: Array<{ id: string, reason: string }> = [];
 
-        // Vérification des champs obligatoires
-        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId) {
-            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS)
+        const assignedAccounts: any[] = [];
+        const failedAssignments: { accountId: number, reason: string }[] = [];
+
+        if (!description || !timeBegin || !estimatedEnd || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        let parsedAccountAssignIds: number[] = [];
+        if (typeof accountAssignIds === 'string') {
+            try {
+                parsedAccountAssignIds = JSON.parse(accountAssignIds);
+            } catch {
+                throw new BadRequestError(MissionEnum.ACCOUNT_ASSIGN_ID_JSON);
+            }
+        } else if (Array.isArray(accountAssignIds)) {
+            parsedAccountAssignIds = accountAssignIds;
         }
 
         // Vérification du type de mission
