@@ -298,9 +298,7 @@ export const getDetailMissionById = async (req: Request, res: Response): Promise
             return;
         }
 
-        res.status(200).json({
-            mission: mission.toJSON()
-        });
+        res.status(200).json(mission.toJSON());
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
@@ -413,7 +411,8 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
-                    where: whereAccount
+                    where: whereAccount,
+                    required: false
                 },
                 {
                     model: MissionTypeModel,
@@ -421,7 +420,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                 }
             ],
             order: [['timeBegin', 'DESC']],
-            limit: limit ? parseInt(limit as string, 10) : undefined
+            limit: limit ? parseInt(limit as string, 10) : undefined,
         });
 
         const missions = missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
