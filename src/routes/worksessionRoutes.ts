@@ -12,18 +12,18 @@ import {
 
 const router = Router();
 
-router.post("/start", auth, startWorkSession);
+router.post("/start", startWorkSession);
 
-router.post("/:sessionId/pause", auth, pauseWorkSession);
+router.post("/:sessionId/pause", pauseWorkSession);
 
-router.post("/:sessionId/resume", auth, resumeWorkSession);
+router.post("/:sessionId/resume", resumeWorkSession);
 
-router.post("/:sessionId/stop", auth, stopWorkSession);
+router.post("/:sessionId/stop", stopWorkSession);
 
-router.get("/:idMission/sessions", auth, getSessionsByMissionId);
+router.get("/:idMission/sessions", getSessionsByMissionId);
 
-router.get("/withoutMission/:idAccount", auth, getSessionsWithoutMission);
+router.get("/withoutMission/:idAccount", getSessionsWithoutMission);
 
-router.post("/manualSession", auth, createManualSession)
+router.post("/manualSession", createManualSession)
 
 module.exports = router;
