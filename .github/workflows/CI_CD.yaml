@@ -75,6 +75,9 @@ jobs:
           name: deploy
           path: .
 
+      - name: Déplacer l'archive téléchargée
+        run: mv deploy/deploy.tar.gz .
+
       - name: Checkout du code (pour les fichiers annexes si besoin)
         uses: actions/checkout@v4
 
