@@ -98,16 +98,23 @@ jobs:
           # Sur le serveur distant : créer le dossier de déploiement si besoin
           ssh $SERVER_USER@$SERVER_IP "
             sudo mkdir -p /var/www/backEnd &&
-            sudo chown ubuntu:ubuntu /var/www/backEnd &&
-            cd /var/www/backEnd &&
+            sudo chown ubuntu:ubuntu /var/www/backEnd
+          "
+          
           # Sur le serveur distant : se placer dans /var/www/backEnd
           # et supprimer tous les fichiers SAUF le dossier "uploads"
-            find . -mindepth 1 -not -name 'uploads' -exec rm -rf {} +
+          ssh $SERVER_USER@$SERVER_IP "
+          cd /var/www/backEnd &&
+          bash -c '
+          shopt -s extglob
+          rm -rf !(\"uploads\")
+          '
           "
+          
           # Envoyer l'archive du projet vers le serveur distant
           scp deploy.tar.gz $SERVER_USER@$SERVER_IP:/var/www/backEnd
           
-          # Envoyer l'archive du projet vers le serveur distant
+          # extraire l'archive du projet vers le serveur distant
           ssh $SERVER_USER@$SERVER_IP "
             cd /var/www/backEnd &&
             tar xzf deploy.tar.gz &&
