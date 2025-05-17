@@ -50,34 +50,38 @@ jobs:
       - name: Lancer les tests
         run: npx jest
 
+      - name: Compiler le projet
+        run: npm run build
+
+      - name: Préparer les fichiers à déployer (artefact)
+        run: |
+          tar czf deploy.tar.gz dist package.json package-lock.json ecosystem.config.js
+        # Création d'un artefact pour le job CD
+      - name: Upload de l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy
+          path: deploy.tar.gz
+
   CD:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: CI
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout du code
+      - name: Télécharger l'artefact du build
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy
+          path: .
+
+      - name: Checkout du code (pour les fichiers annexes si besoin)
         uses: actions/checkout@v4
 
-      - name: Installer Node.js
-        uses: actions/setup-node@v3
-        with:
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Installer les dépendances
-        run: npm ci
-
-      - name: Créer .env.production
-        run: |
-          echo -e "${{ secrets.ENV_PROD_FILE }}" > .env.production
-
-      - name: Compiler le projet
-        run: npm run build
-
-      - name: Préparer l'archive à déployer
-        run: |
-          tar czf deploy.tar.gz dist package.json package-lock.json ecosystem.config.js .env.production
+      - name: Créer .env.production (en toute sécurité)
+        run: echo "$ENV_PROD_FILE" | tr '\r' '\n' > .env.production
+        env:
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE }}
 
       - name: Déployer sur le serveur
         run: |
@@ -94,38 +98,30 @@ jobs:
           # Sur le serveur distant : créer le dossier de déploiement si besoin
           ssh $SERVER_USER@$SERVER_IP "
             sudo mkdir -p /var/www/backEnd &&
-            sudo chown ubuntu:ubuntu /var/www/backEnd
-          "
-          
+            sudo chown ubuntu:ubuntu /var/www/backEnd &&
+            cd /var/www/backEnd &&
           # Sur le serveur distant : se placer dans /var/www/backEnd
           # et supprimer tous les fichiers SAUF le dossier "uploads"
-          ssh $SERVER_USER@$SERVER_IP "
-          cd /var/www/backEnd &&
-          bash -c '
-          shopt -s extglob
-          rm -rf !(\"uploads\")
-          '
+            find . -mindepth 1 -not -name 'uploads' -exec rm -rf {} +
           "
-          
           # Envoyer l'archive du projet vers le serveur distant
           scp deploy.tar.gz $SERVER_USER@$SERVER_IP:/var/www/backEnd
-
+          
+          # Envoyer l'archive du projet vers le serveur distant
           ssh $SERVER_USER@$SERVER_IP "
             cd /var/www/backEnd &&
-            # Envoyer l'archive du projet vers le serveur distant
             tar xzf deploy.tar.gz &&
-            # Supprimer l'archive après extraction
+          # Supprimer l'archive après extraction
             rm deploy.tar.gz &&
-
-            # Vérifier si uploads existe, sinon le créer
-            [ -d uploads ] || mkdir uploads
-
-            # Recréer le fichier .env.production à partir du secret
-            echo '${{ secrets.ENV_PROD_FILE }}' | tr '\r' '\n' > .env.production &&
-          
-            # Installer les dépendances node (sans les devDependencies pour la prod)
+          # Vérifier si uploads existe, sinon le créer
+            [ -d uploads ] || mkdir uploads &&
+          # Recréer le fichier .env.production à partir du secret
+            echo \"$ENV_PROD_FILE\" | tr '\r' '\n' > .env.production &&
+          # Installer les dépendances node (sans les devDependencies pour la prod)
             npm install --omit=dev &&
-            # Redémarrer (ou démarrer) l'application avec PM2 en mode production
             pm2 startOrRestart ecosystem.config.js --env production &&
-            pm2 save
+            pm2 save &&
+            pm2 logs --lines 50 || true
           "
+        env:
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE }}
