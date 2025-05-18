@@ -21,6 +21,7 @@ export const disableEmployee = async (
   try {
     const { user } = req as CustomRequest;
     const account = await AccountModel.findByPk(user.id);
+
     if (!account || !account.isAdmin) {
       throw new UnauthorizedError(ErrorEnum.UNAUTHORIZED);
     }
@@ -199,6 +200,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
         notificationMail,
         notificationSms,
         archivedAt,
+        hiringDate: new Date(),
       });
   
       if (Array.isArray(roleIds) && roleIds.length > 0) {

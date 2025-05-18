@@ -10,6 +10,7 @@ import {
     getMissionsCategorizedByTime,
     updateMission,
     getAllMissionsTypes,
+    getCountListMissionsByAccountId,
 } from "../controllers/MissionController";
 import { auth } from "../middleware/authMiddleware";
 
@@ -83,6 +84,8 @@ router.get("/:idMission/message", auth, getMessagesByMissionId)
 router.post('/:idMission/message', auth, addMessageToMission);
 
 router.get("/listMissions/:id", auth, getListMissionsByAccountId);
+
+router.get("/countListMissions/:id", auth, getCountListMissionsByAccountId);
 
 router.get("/missionCategorized/:id", auth, getMissionsCategorizedByTime);
 

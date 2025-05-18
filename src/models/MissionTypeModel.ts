@@ -5,6 +5,7 @@ class MissionTypeModel extends Model {
     public id!: number;
     public shortLibel!: string;
     public longLibel!: string;
+    public color!: string;
 }
 
 MissionTypeModel.init(
@@ -21,6 +22,11 @@ MissionTypeModel.init(
         longLibel: {
             type: DataTypes.STRING(50),
             allowNull: false,
+        },
+        color: {
+            type: DataTypes.STRING(7),
+            allowNull: false,
+            defaultValue: '#808080',
         },
     },
     {

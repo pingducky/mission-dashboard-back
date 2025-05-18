@@ -17,6 +17,7 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         email: "john.doe@example.com",
         password: "password123",
         phoneNumber: "1234567890",
+        isAdmin: false,
     };
 
     // Appeler le service d'authentification pour créer un utilisateur
@@ -27,7 +28,6 @@ export const generateAuthTokenForTest = async (): Promise<string> => {
         fakeUser.password,
         fakeUser.phoneNumber
     );
-
     return token;
 };
 
