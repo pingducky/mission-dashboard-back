@@ -424,13 +424,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             limit: limit ? parseInt(limit as string, 10) : undefined
         });
 
-        const missions = missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
-            const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
-            mission = mission.get({ plain: true })
-            mission['assignedUsers'] = assignedUsers;
-
-            return mission;
-        });
+        const missions = formatMissions(missionModels);
 
         res.status(200).json(missions);
     } catch (error) {
@@ -556,8 +550,19 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 export const getAllMissionsTypes = async (req: Request, res: Response): Promise<void> => {
     try {
         const missionTypes = await MissionTypeModel.findAll();
-        res.status(200).json( missionTypes );
+        res.status(200).json(missionTypes);
     } catch (error) {
         handleHttpError(error, res);
     }
 };
+
+function formatMissions(missionModels: MissionModel[]): (MissionModel & {assignedUsers?: AccountModel[]})[] {
+    return missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
+        const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
+        mission = mission.get({ plain: true })
+        mission['assignedUsers'] = assignedUsers;
+
+        return mission;
+    });
+
+}
