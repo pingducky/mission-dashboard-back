@@ -347,3 +347,49 @@ export const createManualSession = async (req: Request, res: Response): Promise<
         handleHttpError(error, res);
     }
 };
+
+export const getLatestSessionByAccountId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const idAccount = parseInt(req.params.idAccount, 10);
+
+        if (isNaN(idAccount)) {
+            throw new NotFoundError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = AccountModel.findByPk(idAccount)
+        if (!account) {
+            throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+        }
+
+        const session = await WorkSessionModel.findOne({
+            where: { idAccount, endTime: null },
+            order: [["startTime", "DESC"]],
+            limit: 1,
+            include: [
+                {
+                    model: MissionModel,
+                    required: true,
+                    attributes: ["description"],
+                    where: {
+                        isCanceled: false
+                    }
+                }
+            ]
+        });
+        
+        if (!session) {
+            res.status(204).json();
+            return;
+        }
+
+        const description = session.getDataValue("MissionModel")["description"];
+
+        let sessionMission = session.get({ plain: true });
+        delete sessionMission["MissionModel"];
+        sessionMission["description"] = description;
+
+        res.status(200).json(sessionMission);
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+}

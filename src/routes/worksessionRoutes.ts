@@ -2,6 +2,7 @@ import { Router } from "express";
 import { auth } from "../middleware/authMiddleware";
 import {
     createManualSession,
+    getLatestSessionByAccountId,
     getSessionsByMissionId,
     getSessionsWithoutMission,
     pauseWorkSession,
@@ -25,5 +26,7 @@ router.get("/:idMission/sessions", getSessionsByMissionId);
 router.get("/withoutMission/:idAccount", getSessionsWithoutMission);
 
 router.post("/manualSession", createManualSession)
+
+router.get("/latest/:idAccount", auth, getLatestSessionByAccountId);
 
 module.exports = router;
