@@ -536,7 +536,8 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
-                    where: whereAccount
+                    where: whereAccount,
+                    required: false,
                 },
                 {
                     model: MissionTypeModel,
@@ -758,6 +759,7 @@ export const getAllMissionsTypes = async (req: Request, res: Response): Promise<
 function formatMissions(missionModels: MissionModel[]): (MissionModel & {assignedUsers?: AccountModel[]})[] {
     return missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
         const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
+        console.log(assignedUsers);
         mission = mission.get({ plain: true })
         mission['assignedUsers'] = assignedUsers;
 
