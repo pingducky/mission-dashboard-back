@@ -13,18 +13,6 @@ import { generateAuthTokenForTest } from '../Utils/TestProvider';
 let authToken: string;
 let accountId: number;
 
-type MissionResponse = {
-    description: string;
-    timeBegin: string;
-    address: string;
-    idMissionType: number;
-    AccountModels: {
-        id: number;
-        firstName: string;
-        lastName: string;
-    }[];
-};
-
 beforeAll(async () => {
     await resetDatabase();
 
@@ -34,11 +22,11 @@ beforeAll(async () => {
         firstName: "Test",
         lastName: "User",
         email: "test.user@example.com",
-        password: "securepassword"
+        password: "securepassword",
+        isAdmin: false,
     });
 
     accountId = account.id;
-
     await MissionTypeModel.create({
         id: 1,
         shortLibel: "Test",
@@ -122,7 +110,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(3);
@@ -133,7 +121,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBeGreaterThan(0);
@@ -155,7 +143,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?from=2025-03-27`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(2);
@@ -167,7 +155,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?to=2025-03-30`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(2);
@@ -179,7 +167,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?from=2025-03-27&to=2025-03-30`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -191,7 +179,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?filterByType=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(3);
@@ -202,7 +190,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?limit=2`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBeLessThanOrEqual(2);
@@ -217,7 +205,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?filterByType=1&from=2025-03-27&to=2025-04-01`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -229,7 +217,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?from=2025-03-26&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -240,7 +228,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?filterByType=1&from=2025-03-01&to=2025-04-30&limit=1`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -251,7 +239,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?from=2030-01-01`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions).toEqual([]);
@@ -277,7 +265,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?status=actives`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -303,7 +291,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?status=prevues`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -329,7 +317,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?status=passees`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);
@@ -357,7 +345,7 @@ describe('Liste des missions filtrées', () => {
             .get(`/api/mission/listMissions/${accountId}?status=annulees`)
             .set("Authorization", `Bearer ${authToken}`);
 
-        const missions = response.body.missions as MissionResponse[];
+        const missions = response.body;
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(1);

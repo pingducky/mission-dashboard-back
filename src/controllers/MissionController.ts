@@ -368,9 +368,7 @@ export const getDetailMissionById = async (req: Request, res: Response): Promise
             return;
         }
 
-        res.status(200).json({
-            mission: mission.toJSON()
-        });
+        res.status(200).json(mission.toJSON());
 
     } catch (error) {
         res.status(500).json({ message: MissionEnum.ERROR_DURING_FETCHING_MISSION });
@@ -471,6 +469,11 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
 
         const now = new Date();
         const where: any = {};
+        const whereAccount: any = {};
+
+        if(!account.isAdmin) {
+            whereAccount.id = account.id;
+        }
 
         // Filtres temporels
         if (from || to) {
@@ -524,14 +527,15 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                 break;
         }
 
-        const missions = await MissionModel.findAll({
+        const missionModels = await MissionModel.findAll({
             where,
             include: [
                 {
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
-                    where: { id: accountId },
+                    where: whereAccount,
+                    required: !account.isAdmin
                 },
                 {
                     model: MissionTypeModel,
@@ -542,8 +546,9 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             limit: limit ? parseInt(limit as string, 10) : undefined,
         });
 
-        res.status(200).json({ missions });
+        const missions = formatMissions(missionModels);
 
+        res.status(200).json(missions);
     } catch (error) {
         handleHttpError(error, res);
     }
@@ -748,3 +753,14 @@ export const getAllMissionsTypes = async (req: Request, res: Response): Promise<
         handleHttpError(error, res);
     }
 };
+
+function formatMissions(missionModels: MissionModel[]): (MissionModel & {assignedUsers?: AccountModel[]})[] {
+    return missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
+        const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
+        mission = mission.get({ plain: true })
+        mission['assignedUsers'] = assignedUsers;
+
+        return mission;
+    });
+
+}

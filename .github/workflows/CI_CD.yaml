@@ -50,6 +50,9 @@ jobs:
       - name: Lancer les tests
         run: npx jest
 
+      - name: Build du projet
+        run: npm run build
+
   CD:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: CI

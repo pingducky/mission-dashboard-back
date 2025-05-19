@@ -15,7 +15,11 @@ class MissionModel extends Model {
     public postalCode!: string;
     public countryCode!: string;
     public idMissionType!: number;
+<<<<<<< HEAD
     public isCanceled!: boolean;
+=======
+    public isCancelled!: boolean;
+>>>>>>> main
     public pictures?: PictureModel[];
 }
 
@@ -66,7 +70,7 @@ MissionModel.init(
                 key: 'id',
             },
         },
-        isCanceled: {
+        isCancelled: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
