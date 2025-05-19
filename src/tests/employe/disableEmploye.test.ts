@@ -42,7 +42,7 @@ describe("PUT /employee/:id/disable", () => {
     });
 
     test("Doit désactiver l'employé", async () => {
-        await giveAdminRole();
+        await AccountModel.update({ isAdmin: true }, { where: { id: 1 } });
 
         const response = await request(app)
             .put("/api/employee/1/disable")
@@ -60,7 +60,7 @@ describe("PUT /employee/:id/disable", () => {
     });
 
     test("Doit retourner une erreur si l'employé n'existe pas", async () => {
-        await giveAdminRole();
+        await AccountModel.update({ isAdmin: true }, { where: { id: 1 } });
 
         const response = await request(app)
         .put("/api/employee/9999/disable")

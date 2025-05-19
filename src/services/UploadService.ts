@@ -34,21 +34,27 @@ const createFileFilter = (allowedMimeTypes: string[]) => (req: Request, file: Ex
 export const uploadFiles = (
     files: Express.Multer.File[],
     allowedMimeTypes: string[]
-): Promise<{ filesUploaded: string[], rejectedFiles: string[] }> => {
+): Promise<{
+    filesUploaded: string[],
+    rejectedFiles: { id: string, reason: string }[]
+}> => {
     return new Promise((resolve, reject) => {
         try {
             const fileFilter = createFileFilter(allowedMimeTypes);
 
             const filesUploaded: string[] = [];
-            const rejectedFiles: string[] = [];
+            const rejectedFiles: { id: string, reason: string }[] = [];
 
             const filePromises = files.map(file => {
                 return new Promise<void>((res) => {
                     fileFilter(null as unknown as Request, file, (err) => {
                         if (err) {
-                            rejectedFiles.push(file.originalname); // Ajoute aux fichiers rejetés
+                            rejectedFiles.push({
+                                id: file.originalname,
+                                reason: 'Type MIME non supporté'
+                            });
                         } else {
-                            filesUploaded.push(file.path); // Ajoute aux fichiers acceptés
+                            filesUploaded.push(file.path);
                         }
                         res();
                     });

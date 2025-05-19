@@ -58,47 +58,67 @@ describe('GET /api/missions/:id', () => {
     futureDate.setDate(today.getDate() + 1);
 
     beforeEach(async () => {
+        await MissionModel.destroy({ where: {}, force: true });
+        await PictureModel.destroy({ where: {}, force: true });
+        await AccountMissionAssignModel.destroy({ where: {}, force: true });
+    
+        const today = new Date();
+        const pastDate = new Date(today);
+        const currentDate = new Date(today);
+        const futureDate = new Date(today);
+    
+        pastDate.setDate(today.getDate() - 2); // Assure que estimatedEnd < today
+        currentDate.setHours(10, 0, 0, 0); // Dans la journée actuelle
+        futureDate.setDate(today.getDate() + 2); // Dans le futur
+    
         const missions = await MissionModel.bulkCreate([
+            // Missions passées
             {
-                description: "Mission passée",
+                description: "Mission passée 1",
                 timeBegin: pastDate,
-                timeEnd: pastDate,
-                address: "Rue du passé",
+                estimatedEnd: pastDate,
+                address: "Rue du passé 1",
                 idMissionType: 1
             },
             {
-                description: "Mission passée2",
+                description: "Mission passée 2",
                 timeBegin: pastDate,
-                timeEnd: pastDate,
-                address: "Rue du passé2",
+                estimatedEnd: pastDate,
+                address: "Rue du passé 2",
                 idMissionType: 1
             },
+            // Missions actuelles
             {
-                description: "Mission en cours",
+                description: "Mission actuelle 1",
                 timeBegin: currentDate,
-                address: "Rue du présent",
+                estimatedEnd: futureDate,
+                address: "Rue du présent 1",
                 idMissionType: 1
             },
             {
-                description: "Mission en cours2",
+                description: "Mission actuelle 2",
                 timeBegin: currentDate,
-                address: "Rue du présent2",
+                estimatedEnd: futureDate,
+                address: "Rue du présent 2",
+                idMissionType: 1
+            },
+            // Missions futures
+            {
+                description: "Mission future 1",
+                timeBegin: futureDate,
+                estimatedEnd: futureDate,
+                address: "Rue du futur 1",
                 idMissionType: 1
             },
             {
-                description: "Mission future",
+                description: "Mission future 2",
                 timeBegin: futureDate,
-                address: "Rue du futur",
+                estimatedEnd: futureDate,
+                address: "Rue du futur 2",
                 idMissionType: 1
             },
-            {
-                description: "Mission future2",
-                timeBegin: futureDate,
-                address: "Rue du futur2",
-                idMissionType: 1
-            }
         ], { returning: true });
-
+    
         for (const mission of missions) {
             await AccountMissionAssignModel.create({
                 idAccount: createdAccountId,
@@ -106,7 +126,7 @@ describe('GET /api/missions/:id', () => {
             });
         }
     });
-
+    
     test('Renvoie une erreur si ID invalide', async () => {
         const response = await request(app)
             .get('/api/mission/missionCategorized/abc')

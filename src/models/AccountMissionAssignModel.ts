@@ -13,12 +13,12 @@ AccountMissionAssignModel.init(
         idAccount: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: AccountModel, key: 'id', }
+            references: { model: AccountModel, key: 'id' },
         },
         idMission: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            references: { model: MissionModel, key: 'id', }
+            references: { model: MissionModel, key: 'id' },
         },
     },
     {
@@ -28,20 +28,32 @@ AccountMissionAssignModel.init(
     }
 );
 
-AccountModel.belongsToMany(MissionModel, { 
-    through: AccountMissionAssignModel, 
-    foreignKey: 'idAccount', 
-    otherKey: 'idMission',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+// Associations explicites pour permettre les jointures
+AccountMissionAssignModel.belongsTo(MissionModel, {
+    foreignKey: 'idMission',
+    as: 'mission',
 });
 
-MissionModel.belongsToMany(AccountModel, { 
-    through: AccountMissionAssignModel, 
-    foreignKey: 'idMission', 
+AccountMissionAssignModel.belongsTo(AccountModel, {
+    foreignKey: 'idAccount',
+    as: 'account',
+});
+
+// Relations Many-to-Many principales
+AccountModel.belongsToMany(MissionModel, {
+    through: AccountMissionAssignModel,
+    foreignKey: 'idAccount',
+    otherKey: 'idMission',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+});
+
+MissionModel.belongsToMany(AccountModel, {
+    through: AccountMissionAssignModel,
+    foreignKey: 'idMission',
     otherKey: 'idAccount',
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
 });
 
 export default AccountMissionAssignModel;

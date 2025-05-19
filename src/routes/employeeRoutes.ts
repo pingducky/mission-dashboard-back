@@ -98,6 +98,7 @@ router.get ('/:id', auth, getEmployeeById);
 router.patch('/:id', auth, updateEmployee);
 
 router.put('/:id/disable', auth, disableEmployee);
+
 router.put('/:id/activate', auth, activateEmployee);
 
 router.patch("/:id/role", auth, updateEmployeRole);

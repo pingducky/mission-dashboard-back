@@ -9,12 +9,13 @@ class MissionModel extends Model {
     public description!: string;
     public timeBegin!: Date;
     public timeEnd?: Date;
-    public estimatedEnd?: Date;
+    public estimatedEnd!: Date;
     public address!: string;
     public city!: string;
     public postalCode!: string;
     public countryCode!: string;
     public idMissionType!: number;
+    public isCancelled?: boolean;
     public pictures?: PictureModel[];
 }
 
@@ -35,7 +36,7 @@ MissionModel.init(
         },
         estimatedEnd: {
             type: DataTypes.DATE,
-            allowNull: true,
+            allowNull: false,
         },
         address: {
             type: DataTypes.TEXT,
@@ -65,6 +66,11 @@ MissionModel.init(
                 key: 'id',
             },
         },
+        isCanceled: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+        }
     },
     {
         sequelize,

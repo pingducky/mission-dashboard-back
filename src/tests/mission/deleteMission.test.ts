@@ -10,6 +10,7 @@ import { generateAuthTokenForTest } from '../Utils/TestProvider';
 import MissionModel from '../../models/MissionModel';
 import MessageModel from '../../models/MessageModel';
 import PictureModel from '../../models/PictureModel';
+import AccountModel from '../../models/AccountModel';
 
 let authToken: string;
 let missionIdToDelete: number;
@@ -28,17 +29,19 @@ beforeAll(async () => {
     const response = await request(app)
         .post('/api/mission')
         .send({
-            description: 'Mission à supprimer',
-            timeBegin: '2025-02-17T10:00:00Z',
-            address: 'Adresse',
-            city: "city",
+            description: "Good description",
+            timeBegin: "2025-02-17T10:00:00Z",
+            estimatedEnd: "2025-02-17T10:00:00Z",
+            address: "Good adresse",
+            city: "Good city",
             postalCode: "75000",
             countryCode: "FR",
-            missionTypeId: 1
+            missionTypeId: 1,
+            accountAssignIds: JSON.stringify([1])
         })
         .set('Authorization', `Bearer ${authToken}`);
 
-    missionIdToDelete = response.body.mission.id;
+    missionIdToDelete = response.body.missionId;
 });
 
 afterAll(async () => {
@@ -103,20 +106,22 @@ describe('Suppression de mission', () => {
         // Crée la mission
         const requestBuilder = request(app)
             .post('/api/mission')
-            .field("description", "Mission à supprimer")
-            .field("timeBegin", "2025-02-17T10:00:00Z")
-            .field("address", "Adresse complète")
+            .field("description", "Good description")
+            .field("timeBegin", "2028-02-17T10:00:00Z")
+            .field("timeEnd", "2029-02-17T10:00:00Z")
+            .field("estimatedEnd", "2025-02-17T10:00:00Z")
+            .field("address", "Good address")
             .field("city", "Paris")
             .field("postalCode", "75000")
             .field("countryCode", "FR")
+            .field("accountAssignIds", JSON.stringify([1]))
             .field("missionTypeId", 1)
             .set("Authorization", `Bearer ${authToken}`);
 
         await requestBuilder.attach("pictures", imagePath);
         const response = await requestBuilder;
-
-        const missionId = response.body.mission.id;
-        const uploadedFileName = path.basename(response.body.accepedUploadedFiles[0]);
+        const missionId = response.body.missionId;
+        const uploadedFileName = path.basename(response.body.uploadedFiles[0]);
         const uploadedFilePath = path.join(process.env.FILES_UPLOAD_OUTPUT, uploadedFileName);
 
         // Ajoute un commentaire à la mission

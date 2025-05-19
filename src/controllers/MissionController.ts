@@ -18,27 +18,93 @@ import path from "path";
 
 export const createMission = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { description, timeBegin, estimatedEnd, address, city, postalCode, countryCode, timeEnd, missionTypeId, accountAssignId } = req.body;
-        let accepedUploadedFiles: string[] = [];
-        let rejectedUploadFiles: string[] = [];
+        const {
+            description,
+            timeBegin,
+            estimatedEnd,
+            address,
+            city,
+            postalCode,
+            countryCode,
+            timeEnd,
+            missionTypeId,
+            accountAssignIds
+        } = req.body;
 
-        // Vérification des champs obligatoires
-        if (!description || !timeBegin || !address || !city || !postalCode || !countryCode || !missionTypeId) {
-            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS)
+        let acceptedUploadedFiles: string[] = [];
+        let rejectedUploadFiles: Array<{ id: string, reason: string }> = [];
+
+        const assignedAccounts: any[] = [];
+        const failedAssignments: { accountId: number, reason: string }[] = [];
+
+        if (!description || !timeBegin || !estimatedEnd || !address || !city || !postalCode || !countryCode || !missionTypeId || !accountAssignIds) {
+            throw new BadRequestError(ErrorEnum.MISSING_REQUIRED_FIELDS);
+        }
+
+        let parsedAccountAssignIds: number[] = [];
+        if (typeof accountAssignIds === 'string') {
+            try {
+                parsedAccountAssignIds = JSON.parse(accountAssignIds);
+            } catch {
+                throw new BadRequestError(MissionEnum.ACCOUNT_ASSIGN_ID_JSON);
+            }
+        } else if (Array.isArray(accountAssignIds)) {
+            parsedAccountAssignIds = accountAssignIds;
         }
 
         // Vérification du type de mission
         const missionType = await MissionTypeModel.findByPk(missionTypeId);
         if (!missionType) {
-            throw new BadRequestError(MissionEnum.MISSION_TYPE_DOESNT_EXIST)
+            throw new BadRequestError(MissionEnum.MISSION_TYPE_DOESNT_EXIST);
+        }
+
+        // Vérification des comptes à assigner
+        for (const accountId of parsedAccountAssignIds) {
+            const account = await AccountModel.findByPk(accountId);
+            if (!account) {
+                failedAssignments.push({ accountId, reason: MissionEnum.NOT_FOUND_ACCOUNT });
+                continue;
+            }
+
+            const conflictingMission = await AccountMissionAssignModel.findOne({
+                where: { idAccount: accountId },
+                include: [{
+                    model: MissionModel,
+                    as: 'mission',
+                    where: {
+                        [Op.or]: [
+                            { timeBegin: { [Op.between]: [timeBegin, estimatedEnd] } },
+                            { estimatedEnd: { [Op.between]: [timeBegin, estimatedEnd] } },
+                            {
+                                [Op.and]: [
+                                    { timeBegin: { [Op.lte]: timeBegin } },
+                                    { estimatedEnd: { [Op.gte]: estimatedEnd } }
+                                ]
+                            }
+                        ]
+                    }
+                }]
+            });
+
+            if (conflictingMission) {
+                failedAssignments.push({ accountId, reason: MissionEnum.CONFLIT_MISSION });
+                continue;
+            }
+
+            assignedAccounts.push(account);
+        }
+
+        // Si aucun compte assignable, on annule la création
+        if (assignedAccounts.length === 0) {
+            throw new BadRequestError(MissionEnum.BAD_ACCOUNT_ASSIGNATION)
         }
 
         // Création de la mission
         const newMission = await MissionModel.create({
             description,
             timeBegin,
-            timeEnd,
-            estimatedEnd,
+            timeEnd: null,
+            estimatedEnd: estimatedEnd,
             address,
             city,
             postalCode,
@@ -46,24 +112,23 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             idMissionType: missionTypeId
         });
 
-        // Vérification si l'account existe
-        if (accountAssignId) {
-            const accountExists = await AccountModel.findByPk(accountAssignId);
-            if (accountExists) {
-                await AccountMissionAssignModel.create({
-                    idAccount: accountAssignId,
-                    idMission: newMission.id
-                });
-            } else {
-                throw new NotFoundError(MissionEnum.USER_NOT_FOUND)
-            }
+        // Assignation des comptes valides
+        for (const account of assignedAccounts) {
+            await AccountMissionAssignModel.create({
+                idAccount: account.id,
+                idMission: newMission.id
+            });
         }
 
-        // Upload des fichiers et enregistrement des images associées
+        // Upload des fichiers
         if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-            const { filesUploaded, rejectedFiles } = await uploadFiles(req.files as Express.Multer.File[], Object.values(IMAGES_MIME_TYPE));
+            const { filesUploaded, rejectedFiles } = await uploadFiles(
+                req.files as Express.Multer.File[],
+                Object.values(IMAGES_MIME_TYPE)
+            );
             rejectedUploadFiles = rejectedFiles;
-            accepedUploadedFiles = filesUploaded;
+            acceptedUploadedFiles = filesUploaded;
+
             const pictureRecords = filesUploaded.map(filePath => ({
                 name: path.basename(filePath),
                 alt: "Image de la mission",
@@ -73,13 +138,17 @@ export const createMission = async (req: Request, res: Response): Promise<void> 
             await PictureModel.bulkCreate(pictureRecords);
         }
 
-        // Réponse avec ou sans avertissement
         res.status(201).json({
-            message: MissionEnum.MISSION_SUCCESSFULLY_CREATED,
-            mission: { ...newMission.toJSON() }, 
-            rejectedUploadFiles,
-            accepedUploadedFiles,
+            missionId: newMission.id,
+            assignedAccountIds: assignedAccounts.map(account => account.id),
+            failedAssignments: failedAssignments.map(entry => ({
+                accountId: entry.accountId,
+                reason: entry.reason
+            })),
+            uploadedFiles: acceptedUploadedFiles,
+            rejectedFiles: rejectedUploadFiles
         });
+
     } catch (error) {
         handleHttpError(error, res);
     }
@@ -145,7 +214,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         }
 
         let accepedUploadedFiles: string[] = [];
-        let rejectedUploadFiles: string[] = [];
+        let rejectedUploadFiles: Array<{id: string, reason: string}> = [];
 
         // Upload des fichiers et enregistrement des images associées
         if (req.files && Array.isArray(req.files) && req.files.length > 0) {
@@ -172,6 +241,7 @@ export const updateMission = async (req: Request, res: Response): Promise<void> 
         handleHttpError(error, res);
     }
 }
+
 export const deleteMission = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -340,15 +410,25 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
 };
 
 /*
- * Gestion des filtres et du tri dynamique :
+ * Récupération des missions d’un employé avec filtres dynamiques
+ *
+ * Route :
+ *   GET http://localhost:3000/api/mission/listMissions/:idEmployee
  *
  * Query params disponibles :
- * - from=YYYY-MM-DD        → filtre les missions dont la date de début (timeBegin) est après ou égale à cette date
- * - to=YYYY-MM-DD          → filtre les missions dont la date de début est avant ou égale à cette date
- * - filterByType=ID        → filtre les missions par ID de type de mission (idMissionType)
- * - limit=N                → limite le nombre de missions retournées à N
+ * - from=YYYY-MM-DD        → Filtre les missions dont la date de début (timeBegin) est >= à cette date
+ * - to=YYYY-MM-DD          → Filtre les missions dont la date de début (timeBegin) est <= à cette date
+ * - filterByType=ID        → Filtre les missions par identifiant de type de mission (idMissionType)
+ * - limit=N                → Limite le nombre de missions retournées à N
+ * - status=[actives|past|upcoming|canceled|all]
+ *                          → Filtre les missions selon leur statut :
+ *                              - actives : timeBegin ≤ now && (timeEnd ≥ now || timeEnd is null)
+ *                              - past : timeEnd < now
+ *                              - upcoming : timeBegin > now
+ *                              - canceled : mission.isCanceled = true
+ *                              - all : aucun filtre appliqué (valeur par défaut)
  *
- * Exemples d'appels :
+ * Exemples d’appels :
  * GET /api/mission/listMissions/1?from=2025-03-25
  *   → Missions à partir du 25 mars 2025
  *
@@ -356,21 +436,27 @@ export const getMessagesByMissionId = async (req: Request, res: Response): Promi
  *   → Missions entre le 25 et le 30 mars 2025
  *
  * GET /api/mission/listMissions/1?filterByType=2
- *    → Récupération des missions du type 2
+ *   → Missions de type 2
  *
  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01
- *   → Missions du type 2, entre deux dates
+ *   → Missions de type 2 entre deux dates
  *
  * GET /api/mission/listMissions/1?limit=5
- *  → Récupération des 5 dernières missions
+ *   → 5 dernières missions (ordonnées par date décroissante)
  *
- *  * GET /api/mission/listMissions/1?filterByType=2&from=2025-03-25&to=2025-04-01&limit=5
- *   → Missions du type 2, entre deux dates, limitées à 5
+ * GET /api/mission/listMissions/1?status=actives
+ *   → Missions actuellement actives
+ *
+ * GET /api/mission/listMissions/1?status=upcoming&limit=3
+ *   → Prochaines missions à venir, limitées à 3
+ *
+ * GET /api/mission/listMissions/1?status=passees&from=2025-01-01
+ *   → Missions passées à partir du 1er janvier 2025
  */
 export const getListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
     try {
         const accountId = parseInt(req.params.id, 10);
-        const { from, to, filterByType, limit } = req.query;
+        const { from, to, filterByType, limit, status = 'all' } = req.query;
 
         if (isNaN(accountId)) {
             throw new BadRequestError(ErrorEnum.INVALID_ID);
@@ -381,6 +467,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
         }
 
+        const now = new Date();
         const where: any = {};
         const whereAccount: any = {};
 
@@ -388,50 +475,157 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
             whereAccount.id = account.id;
         }
 
-        if (from) {
-            where.timeBegin = { [Op.gte]: new Date(from as string) };
+        // Filtres temporels
+        if (from || to) {
+            where.timeBegin = {};
+            if (from) {
+                where.timeBegin[Op.gte] = new Date(from as string);
+            }
+            if (to) {
+                where.timeBegin[Op.lte] = new Date(to as string);
+            }
         }
 
-        if (to) {
-            where.timeBegin = {
-                ...(where.timeBegin || {}),
-                [Op.lte]: new Date(to as string)
-            };
-        }
-
+        // Filtre par type de mission
         if (filterByType) {
             where.idMissionType = parseInt(filterByType as string, 10);
+        }
+
+        // Filtres par statut
+        switch (status) {
+            case 'actives':
+                where.timeBegin = {
+                    ...(where.timeBegin || {}),
+                    [Op.lte]: now,
+                };
+                where.timeEnd = {
+                    [Op.or]: [
+                        { [Op.gte]: now },
+                        { [Op.is]: null },
+                    ],
+                };
+                break;
+
+            case 'past':
+                where.timeEnd = { [Op.lt]: now };
+                break;
+
+            case 'upcoming':
+                where.timeBegin = {
+                    ...(where.timeBegin || {}),
+                    [Op.gt]: now,
+                };
+                where.isCanceled = false;
+                break;
+
+            case 'canceled':
+                where.isCanceled = true;
+                break;
+
+            case 'all':
+            default:
+                break;
         }
 
         const missionModels = await MissionModel.findAll({
             where,
             include: [
                 {
-                    // Personne assignée à la mission
                     model: AccountModel,
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
                     where: whereAccount,
-                    required: false
+                    required: !account.isAdmin
                 },
                 {
                     model: MissionTypeModel,
-                    as: 'missionType'
-                }
+                    as: 'missionType',
+                },
             ],
             order: [['timeBegin', 'DESC']],
             limit: limit ? parseInt(limit as string, 10) : undefined,
         });
 
-        const missions = missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
-            const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
-            mission = mission.get({ plain: true })
-            mission['assignedUsers'] = assignedUsers;
-
-            return mission;
-        });
+        const missions = formatMissions(missionModels);
 
         res.status(200).json(missions);
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
+
+export const getCountListMissionsByAccountId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.id, 10);
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(MissionEnum.USER_NOT_FOUND);
+        }
+
+        const now = new Date();
+
+        const baseInclude = [
+            {
+                model: AccountModel,
+                attributes: [],
+                through: { attributes: [] },
+                where: { id: accountId },
+            },
+        ];
+
+        const allMissionsCount = await MissionModel.count({
+            include: baseInclude,
+        });
+
+        const activeMissionsCount = await MissionModel.count({
+            where: {
+                timeBegin: { [Op.lte]: now },
+                [Op.or]: [
+                    { timeEnd: { [Op.gte]: now } },
+                    { timeEnd: { [Op.is]: null } },
+                ],
+            },
+            include: baseInclude,
+        });
+
+        const canceledMissionsCount = await MissionModel.count({
+            where: {
+                isCanceled: true,
+            },
+            include: baseInclude,
+        });
+
+        const pastMissionsCount = await MissionModel.count({
+            where: {
+                timeEnd: { [Op.lt]: now },
+                isCanceled: false,
+            },
+            include: baseInclude,
+        });
+
+        const futureMissionsCount = await MissionModel.count({
+            where: {
+                timeBegin: { [Op.gt]: now },
+                isCanceled: false,
+            },
+            include: baseInclude,
+        });
+
+        res.status(200).json({
+            count: {
+                all: allMissionsCount,
+                actives: activeMissionsCount,
+                canceled: canceledMissionsCount,
+                past: pastMissionsCount,
+                upcoming: futureMissionsCount,
+            }
+        });
+
     } catch (error) {
         handleHttpError(error, res);
     }
@@ -517,9 +711,9 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 
         for (const mission of allMissions) {
             const timeBegin = new Date(mission.timeBegin);
-            const timeEnd = mission.timeEnd ? new Date(mission.timeEnd) : null;
+            const estimatedEnd = mission.estimatedEnd ? new Date(mission.estimatedEnd) : null;
 
-            if (timeEnd && timeEnd < today) {
+            if (estimatedEnd && estimatedEnd < today) {
                 categorized.past.push(mission);
             } else if (timeBegin >= tomorrow) {
                 categorized.future.push(mission);
@@ -545,7 +739,6 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
             if (filtersArray.includes("current")) result.current = applyLimit(categorized.current);
             if (filtersArray.includes("future")) result.future = applyLimit(categorized.future);
         }
-
         res.status(200).json(result);
     } catch (error) {
         handleHttpError(error, res);
@@ -555,8 +748,19 @@ export const getMissionsCategorizedByTime = async (req: Request, res: Response):
 export const getAllMissionsTypes = async (req: Request, res: Response): Promise<void> => {
     try {
         const missionTypes = await MissionTypeModel.findAll();
-        res.status(200).json( missionTypes );
+        res.status(200).json(missionTypes);
     } catch (error) {
         handleHttpError(error, res);
     }
 };
+
+function formatMissions(missionModels: MissionModel[]): (MissionModel & {assignedUsers?: AccountModel[]})[] {
+    return missionModels.map((mission: MissionModel & { assignedUsers?: AccountModel[] }) => {
+        const assignedUsers = mission.getDataValue("AccountModels").map((account: any) => account);
+        mission = mission.get({ plain: true })
+        mission['assignedUsers'] = assignedUsers;
+
+        return mission;
+    });
+
+}
