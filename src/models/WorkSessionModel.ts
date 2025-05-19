@@ -17,6 +17,8 @@ class WorkSessionModel extends Model {
     public startTime!: Date;
     public endTime?: Date | null;
     public status!: WorkSessionStatusEnum;
+    public startLocation?: string;
+    public endLocation?: string;
 
     public pauses?: {
         id: number;
@@ -60,7 +62,16 @@ WorkSessionModel.init(
             type: DataTypes.ENUM(...Object.values(WorkSessionStatusEnum)),
             allowNull: false,
             defaultValue: WorkSessionStatusEnum.STARTED,
-        }
+        },
+        startLocation: {
+            type: DataTypes.STRING(45),
+            allowNull: true,
+        },
+        endLocation: {
+            type: DataTypes.STRING(45),
+            allowNull: true,
+        },
+
     },
     {
         sequelize,
