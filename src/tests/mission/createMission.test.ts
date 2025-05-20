@@ -133,7 +133,6 @@ afterAll(async () => {
             .attach("pictures", imagePath);
     
         expect(response.status).toBe(201);
-        console.debug("response.body : ", response.body);
         const uploadedFilePath = path.join(
             process.env.FILES_UPLOAD_OUTPUT,
             path.basename(response.body.uploadedFiles[0])

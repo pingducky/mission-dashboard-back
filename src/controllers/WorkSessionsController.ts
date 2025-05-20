@@ -393,3 +393,82 @@ export const getLatestSessionByAccountId = async (req: Request, res: Response): 
         handleHttpError(error, res);
     }
 }
+
+export const getSessionsByAccountIdAndDateRange = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const accountId = parseInt(req.params.idAccount, 10);
+        const { from, to, limit } = req.query;
+
+        if (isNaN(accountId)) {
+            throw new BadRequestError(ErrorEnum.INVALID_ID);
+        }
+
+        const account = await AccountModel.findByPk(accountId);
+        if (!account) {
+            throw new NotFoundError(ErrorEnum.ACCOUNT_NOT_FOUND);
+        }
+
+        const where: any = {
+            idAccount: accountId
+        };
+
+        if (from) {
+            where.startTime = { [Op.gte]: new Date(from as string) };
+        }
+
+        if (to) {
+            where.startTime = {
+                ...(where.startTime || {}),
+                [Op.lte]: new Date(to as string)
+            };
+        }
+
+        const sessions = await WorkSessionModel.findAll({
+            where,
+            include: [
+                {
+                    model: AccountModel,
+                    attributes: ["id", "firstName", "lastName"]
+                },
+                {
+                    model: WorkSessionPauseModel,
+                    as: "pauses",
+                    attributes: ["id", "pauseTime", "resumeTime"],
+                    order: [["pauseTime", "ASC"]]
+                }
+            ],
+            order: [["startTime", "DESC"]],
+            limit: limit ? parseInt(limit as string, 10) : undefined
+        });
+
+        const enrichedSessions = sessions.map(session => {
+            const startTime = new Date(session.startTime);
+            const endTime = session.endTime ? new Date(session.endTime) : new Date();
+
+            const totalDurationMs = endTime.getTime() - startTime.getTime();
+
+            const totalPauseMs = session.pauses?.reduce((acc: number, pause: any) => {
+                if (pause.pauseTime && pause.resumeTime) {
+                    return acc + (new Date(pause.resumeTime).getTime() - new Date(pause.pauseTime).getTime());
+                }
+                return acc;
+            }, 0) || 0;
+
+            const effectiveDurationMs = totalDurationMs - totalPauseMs;
+
+            return {
+                ...session.toJSON(),
+                totalDuration: formatDuration(totalDurationMs),
+                totalPause: formatDuration(totalPauseMs),
+                effectiveDuration: formatDuration(effectiveDurationMs)
+            };
+        });
+
+        res.status(200).json({
+            accountId,
+            sessions: enrichedSessions
+        });
+    } catch (error) {
+        handleHttpError(error, res);
+    }
+};
