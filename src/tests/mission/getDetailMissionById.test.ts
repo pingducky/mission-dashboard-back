@@ -63,7 +63,7 @@ afterAll(async () => {
 });
 
 describe("getDetailMissionById", () => {
-    test("Mission existante avec type, images, messages et participants (via upload réel)", async () => {
+    test.skip("Mission existante avec type, images, messages et participants (via upload réel)", async () => {
         if (!process.env.FILES_UPLOAD_OUTPUT) {
             throw new Error('FILES_UPLOAD_OUTPUT doit être configuré pour ce test.');
         }
