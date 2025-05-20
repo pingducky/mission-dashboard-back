@@ -184,6 +184,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
       }
   
       const rawPassword = generateRandomPassword();
+      console.debug("rawPassword : ", rawPassword);
       const hashedPassword = await bcrypt.hash(rawPassword, 10);
   
       const newEmployee = await AccountModel.create({

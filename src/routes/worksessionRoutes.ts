@@ -3,6 +3,7 @@ import { auth } from "../middleware/authMiddleware";
 import {
     createManualSession,
     getLatestSessionByAccountId,
+    getSessionsByAccountIdAndDateRange,
     getSessionsByMissionId,
     getSessionsWithoutMission,
     pauseWorkSession,
@@ -26,6 +27,8 @@ router.get("/:idMission/sessions", getSessionsByMissionId);
 router.get("/withoutMission/:idAccount", getSessionsWithoutMission);
 
 router.post("/manualSession", createManualSession)
+
+router.get("/account/:idAccount", auth, getSessionsByAccountIdAndDateRange);
 
 router.get("/latest/:idAccount", auth, getLatestSessionByAccountId);
 
