@@ -147,7 +147,7 @@ describe('Liste des missions filtrées', () => {
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(2);
-        expect(missions.map(m => m.description)).not.toContain("Mission A");
+        expect(missions.map((m: any) => m.description)).not.toContain("Mission A");
     });
 
     test('Filtre avec la date de fin "to"', async () => {
@@ -159,7 +159,7 @@ describe('Liste des missions filtrées', () => {
 
         expect(response.status).toBe(200);
         expect(missions.length).toBe(2);
-        expect(missions.map(m => m.description)).not.toContain("Mission C");
+        expect(missions.map((m: any) => m.description)).not.toContain("Mission C");
     });
 
     test('Filtre entre deux dates', async () => {
@@ -196,7 +196,7 @@ describe('Liste des missions filtrées', () => {
         expect(missions.length).toBeLessThanOrEqual(2);
 
         // Vérifie l'ordre décroissant des dates
-        const dates = missions.map(m => new Date(m.timeBegin).getTime());
+        const dates = missions.map((m: any) => new Date(m.timeBegin).getTime());
         expect(dates).toEqual([...dates].sort((a, b) => b - a));
     });
 
