@@ -471,9 +471,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
         const where: any = {};
         const whereAccount: any = {};
 
-        if(!account.isAdmin) {
-            whereAccount.id = account.id;
-        }
+        whereAccount.id = account.id;
 
         // Filtres temporels
         if (from || to) {
@@ -535,7 +533,7 @@ export const getListMissionsByAccountId = async (req: Request, res: Response): P
                     attributes: ['id', 'firstName', 'lastName'],
                     through: { attributes: [] },
                     where: whereAccount,
-                    required: !account.isAdmin
+                    required: true
                 },
                 {
                     model: MissionTypeModel,
